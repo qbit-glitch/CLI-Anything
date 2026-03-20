@@ -25,6 +25,7 @@
 !/openclaw-skill/
 
 # Step 4: Allow each software dir (top level only)
+!/shared/
 !/gimp/
 !/blender/
 !/inkscape/
@@ -123,3 +124,7 @@ assets/gen_typing_gif.py
 /notebooklm/*
 /notebooklm/.*
 !/notebooklm/agent-harness/
+
+# CCR context directory
+.ccr/
+.superpowers/
