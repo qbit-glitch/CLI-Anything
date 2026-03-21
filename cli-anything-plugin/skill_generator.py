@@ -186,81 +186,131 @@ def extract_version_from_setup(setup_path: Path) -> str:
 def extract_commands_from_cli(cli_path: Path) -> list[CommandGroup]:
     """Extract command groups and commands from CLI file."""
     content = cli_path.read_text(encoding="utf-8")
+    lines = content.splitlines()
     groups = []
 
-    # Find Click group decorators
-    # Pattern handles:
-    # - Multi-line decorators (decorators on separate lines)
-    # - Docstrings on the same line or following line after function definition
-    # - Various Click decorator patterns like @click.option(), @click.argument()
-    # Uses re.DOTALL to match across newlines between decorator and def
-    group_pattern = (
-        r'@(\w+)\.group\([^)]*\)'                          # @xxx.group(...)
-        r'(?:\s*@[\w.]+\([^)]*\))*'                         # optional additional decorators
-        r'\s*def\s+(\w+)\([^)]*\)'                          # def xxx(...):
-        r':\s*'                                             # colon with optional whitespace
-        r'(?:"""([\s\S]*?)"""|\'\'\'([\s\S]*?)\'\'\')?'      # optional docstring (""" or ''')
-    )
+    # ---------------------------------------------------------------
+    # Line-scanner approach: scan line-by-line for decorator blocks.
+    # @xxx.group(...) and @xxx.command(...) always appear on a single
+    # line in Click CLIs; subsequent @click.option(...) lines may have
+    # nested parentheses so we skip them without regex matching.
+    # ---------------------------------------------------------------
 
-    for match in re.finditer(group_pattern, content):
-        group_func = match.group(2)
-        # Docstring can be in group 3 (triple-double) or group 4 (triple-single)
-        group_doc = (match.group(3) or match.group(4) or "").strip()
+    # Patterns that apply only to the single trigger line
+    _group_trigger = re.compile(r'^@(\w+)\.group\(')
+    _cmd_trigger   = re.compile(r'^@(\w+)\.command\(')
+    _def_line      = re.compile(r'^\s*def\s+(\w+)\s*\(')
+    _decorator     = re.compile(r'^\s*@')
 
-        group_name = group_func.replace("_", " ").title()
-        if not group_name:
-            group_name = group_func.title()
+    def _docstring_after_def(start_idx: int) -> str:
+        """Return the first docstring found after the def line at start_idx."""
+        # Look ahead up to 3 lines for the opening triple-quote
+        for offset in range(1, 4):
+            if start_idx + offset >= len(lines):
+                break
+            stripped = lines[start_idx + offset].strip()
+            if stripped.startswith('"""') or stripped.startswith("'''"):
+                q = '"""' if stripped.startswith('"""') else "'''"
+                # Collect until closing triple-quote
+                doc_lines = [stripped[3:]]
+                if stripped.endswith(q) and len(stripped) > 3:
+                    # Single-line docstring
+                    return stripped[3:].rstrip(q).strip()
+                for j in range(start_idx + offset + 1, min(start_idx + offset + 20, len(lines))):
+                    l = lines[j]
+                    if q in l:
+                        doc_lines.append(l[:l.index(q)])
+                        break
+                    doc_lines.append(l)
+                return " ".join(part.strip() for part in doc_lines if part.strip())
+        return ""
 
-        groups.append(CommandGroup(
-            name=group_name,
-            description=group_doc or f"Commands for {group_name.lower()} operations.",
-            commands=[]
-        ))
+    # Build group index: group_var_name → CommandGroup
+    group_map: dict[str, CommandGroup] = {}
 
-    # Find Click command decorators
-    # Pattern handles:
-    # - Multi-line decorators (decorators on separate lines)
-    # - Docstrings on the same line or following line after function definition
-    # - Various Click decorator patterns like @click.option(), @click.argument()
-    command_pattern = (
-        r'@(\w+)\.command\([^)]*\)'                         # @xxx.command(...)
-        r'(?:\s*@[\w.]+\([^)]*\))*'                          # optional additional decorators
-        r'\s*def\s+(\w+)\([^)]*\)'                           # def xxx(...):
-        r':\s*'                                              # colon with optional whitespace
-        r'(?:"""([\s\S]*?)"""|\'\'\'([\s\S]*?)\'\'\')?'       # optional docstring (""" or ''')
-    )
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
 
-    for match in re.finditer(command_pattern, content):
-        group_name = match.group(1)
-        cmd_name = match.group(2)
-        # Docstring can be in group 3 (triple-double) or group 4 (triple-single)
-        cmd_doc = (match.group(3) or match.group(4) or "").strip()
+        # ---- group detection ----
+        gm = _group_trigger.match(line)
+        if gm:
+            # Scan forward past additional decorators to reach def
+            j = i + 1
+            while j < len(lines) and _decorator.match(lines[j].strip()):
+                j += 1
+            dm = _def_line.match(lines[j].strip()) if j < len(lines) else None
+            if dm:
+                group_func = dm.group(1)
+                group_name = group_func.replace("_", " ").title()
+                doc = _docstring_after_def(j)
+                cg = CommandGroup(
+                    name=group_name,
+                    description=doc or f"Commands for {group_name.lower()} operations.",
+                    commands=[]
+                )
+                groups.append(cg)
+                group_map[group_func.lower()] = cg
+            i = j + 1
+            continue
 
-        # Find the matching group
-        for group in groups:
-            if group.name.lower().replace(" ", "_") == group_name.lower():
-                group.commands.append(CommandInfo(
-                    name=cmd_name.replace("_", "-"),
-                    description=cmd_doc or f"Execute {cmd_name} operation."
-                ))
+        # ---- command detection ----
+        cm = _cmd_trigger.match(line)
+        if cm:
+            deco_group_var = cm.group(1).lower()
+            # Scan forward past additional decorators to reach def
+            j = i + 1
+            while j < len(lines) and _decorator.match(lines[j].strip()):
+                j += 1
+            dm = _def_line.match(lines[j].strip()) if j < len(lines) else None
+            if dm:
+                cmd_func = dm.group(1)
+                doc = _docstring_after_def(j)
+                cmd_info = CommandInfo(
+                    name=cmd_func.replace("_", "-"),
+                    description=doc or f"Execute {cmd_func} operation."
+                )
+                # Match to group
+                if deco_group_var in group_map:
+                    group_map[deco_group_var].commands.append(cmd_info)
+                else:
+                    # Fallback: check groups list by normalised name
+                    for grp in groups:
+                        if grp.name.lower().replace(" ", "_") == deco_group_var:
+                            grp.commands.append(cmd_info)
+                            break
+            i = j + 1
+            continue
 
-    # If no groups found, create a default one with all commands
+        i += 1
+
+    # If no groups found, create a default group with all discovered commands
     if not groups:
         default_group = CommandGroup(
             name="General",
             description="General commands for the CLI.",
             commands=[]
         )
-
-        for match in re.finditer(command_pattern, content):
-            cmd_name = match.group(2)
-            # Docstring can be in group 3 (triple-double) or group 4 (triple-single)
-            cmd_doc = (match.group(3) or match.group(4) or "").strip()
-            default_group.commands.append(CommandInfo(
-                name=cmd_name.replace("_", "-"),
-                description=cmd_doc or f"Execute {cmd_name} operation."
-            ))
-
+        # Re-scan for command defs without group context
+        i = 0
+        while i < len(lines):
+            line = lines[i].strip()
+            cm = _cmd_trigger.match(line)
+            if cm:
+                j = i + 1
+                while j < len(lines) and _decorator.match(lines[j].strip()):
+                    j += 1
+                dm = _def_line.match(lines[j].strip()) if j < len(lines) else None
+                if dm:
+                    cmd_func = dm.group(1)
+                    doc = _docstring_after_def(j)
+                    default_group.commands.append(CommandInfo(
+                        name=cmd_func.replace("_", "-"),
+                        description=doc or f"Execute {cmd_func} operation."
+                    ))
+                i = j + 1
+                continue
+            i += 1
         if default_group.commands:
             groups.append(default_group)
 
@@ -458,6 +508,99 @@ def generate_skill_md_simple(metadata: SkillMetadata) -> str:
     return "\n".join(lines)
 
 
+def _group_prefixes(group_key: str) -> list[str]:
+    """
+    Return candidate prefixes to strip from a command key for a given group key.
+
+    For a group key like "object_group", CLI functions are typically named
+    "object_remove" (not "object_group_remove"), so we try both the full key
+    and common short forms (strip trailing _group, _grp, _cmd suffixes).
+    """
+    candidates = [group_key]
+    for suffix in ("_group", "_grp", "_cmd"):
+        if group_key.endswith(suffix):
+            candidates.append(group_key[: -len(suffix)])
+    return candidates
+
+
+def update_registry_commands(harness_path: str, registry_path: str) -> None:
+    """
+    Enrich a registry.json entry with mcp_tool_prefix and commands array.
+
+    Reads the harness CLI metadata, builds a flat commands list from all
+    command groups, then writes the enriched data back to registry.json.
+    Safe to re-run — existing mcp_tool_prefix/commands fields are overwritten
+    with fresh data (idempotent).
+
+    Args:
+        harness_path: Path to the agent-harness directory (e.g. "blender/agent-harness")
+        registry_path: Path to registry.json
+
+    Raises:
+        ValueError: If the harness entry is not found in registry.json
+        Exception: If extract_cli_metadata fails (re-raised with context)
+    """
+    import json
+
+    # Step 1 — extract metadata (raises on failure with original exception + context)
+    try:
+        metadata = extract_cli_metadata(harness_path)
+    except Exception as exc:
+        raise type(exc)(
+            f"Failed to extract CLI metadata from '{harness_path}': {exc}"
+        ) from exc
+
+    software_name = metadata.software_name
+
+    # Step 2 — build flat commands array
+    commands = []
+    for group in metadata.command_groups:
+        # Normalise group name: title-cased with spaces → lowercase underscores
+        group_key = group.name.lower().replace(" ", "_")
+        for cmd in group.commands:
+            # Normalise command name: hyphens → underscores
+            cmd_key = cmd.name.replace("-", "_")
+            # Strip leading group prefix from cmd_key when present.
+            # CLI function names often include the group name as a prefix
+            # (e.g. "scene_new" in group "scene", "object_remove" in group "object_group").
+            # We try the full group key first, then any trailing "_group"/"_grp" suffix
+            # stripped variant, to avoid double-prefixes in the combined name.
+            for candidate_prefix in _group_prefixes(group_key):
+                pfx = candidate_prefix + "_"
+                if cmd_key.startswith(pfx):
+                    cmd_key = cmd_key[len(pfx):]
+                    break
+            # First line of docstring only, stripped
+            description = cmd.description.splitlines()[0].strip()
+            commands.append({
+                "name": f"{group_key}_{cmd_key}",
+                "group": group_key,
+                "description": description,
+            })
+
+    # Step 3 — read registry.json
+    registry_file = Path(registry_path)
+    data = json.loads(registry_file.read_text(encoding="utf-8"))
+
+    # Step 4 — locate entry
+    entry = next(
+        (e for e in data.get("clis", []) if e.get("name") == software_name),
+        None,
+    )
+    if entry is None:
+        raise ValueError(f"Harness '{software_name}' not found in registry.json")
+
+    # Step 5 — update entry in-place (idempotent: overwrites on re-run)
+    entry["mcp_tool_prefix"] = software_name
+    entry["commands"] = commands
+
+    # Step 6 — write back pretty-printed
+    registry_file.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+
 def generate_skill_file(harness_path: str, output_path: Optional[str] = None,
                         template_path: Optional[str] = None) -> str:
     """
@@ -503,6 +646,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "harness_path",
+        nargs="?",
         help="Path to the agent-harness directory"
     )
     parser.add_argument(
@@ -515,13 +659,25 @@ if __name__ == "__main__":
         help="Path to custom Jinja2 template",
         default=None
     )
+    parser.add_argument(
+        "--update-registry",
+        nargs=2,
+        metavar=("HARNESS_PATH", "REGISTRY_PATH"),
+        help="Enrich a registry.json entry with mcp_tool_prefix and commands[]"
+    )
 
     args = parser.parse_args()
 
-    output_file = generate_skill_file(
-        args.harness_path,
-        args.output,
-        args.template
-    )
-
-    print(f"Generated: {output_file}")
+    if args.update_registry:
+        harness_path_arg, registry_path_arg = args.update_registry
+        update_registry_commands(harness_path_arg, registry_path_arg)
+        print(f"Registry updated for harness at '{harness_path_arg}'")
+    elif args.harness_path:
+        output_file = generate_skill_file(
+            args.harness_path,
+            args.output,
+            args.template
+        )
+        print(f"Generated: {output_file}")
+    else:
+        parser.print_help()

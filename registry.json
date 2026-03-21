@@ -59,7 +59,460 @@
       "skill_md": "blender/agent-harness/cli_anything/blender/skills/SKILL.md",
       "category": "3d",
       "contributor": "CLI-Anything-Team",
-      "contributor_url": "https://github.com/HKUDS/CLI-Anything"
+      "contributor_url": "https://github.com/HKUDS/CLI-Anything",
+      "mcp_tool_prefix": "blender",
+      "commands": [
+        {
+          "name": "scene_new",
+          "group": "scene",
+          "description": "Create a new scene."
+        },
+        {
+          "name": "scene_open",
+          "group": "scene",
+          "description": "Open an existing scene."
+        },
+        {
+          "name": "scene_save",
+          "group": "scene",
+          "description": "Save the current scene."
+        },
+        {
+          "name": "scene_info",
+          "group": "scene",
+          "description": "Show scene information."
+        },
+        {
+          "name": "scene_profiles",
+          "group": "scene",
+          "description": "List available scene profiles."
+        },
+        {
+          "name": "scene_json",
+          "group": "scene",
+          "description": "Print raw scene JSON."
+        },
+        {
+          "name": "object_group_remove",
+          "group": "object_group",
+          "description": "Remove an object by index."
+        },
+        {
+          "name": "object_group_duplicate",
+          "group": "object_group",
+          "description": "Duplicate an object."
+        },
+        {
+          "name": "object_group_transform",
+          "group": "object_group",
+          "description": "Transform an object (translate, rotate, scale)."
+        },
+        {
+          "name": "object_group_set",
+          "group": "object_group",
+          "description": "Set an object property (name, visible, location, rotation, scale, parent)."
+        },
+        {
+          "name": "object_group_list",
+          "group": "object_group",
+          "description": "List all objects."
+        },
+        {
+          "name": "object_group_get",
+          "group": "object_group",
+          "description": "Get detailed info about an object."
+        },
+        {
+          "name": "material_create",
+          "group": "material",
+          "description": "Create a new material."
+        },
+        {
+          "name": "material_assign",
+          "group": "material",
+          "description": "Assign a material to an object."
+        },
+        {
+          "name": "material_set",
+          "group": "material",
+          "description": "Set a material property (color, metallic, roughness, specular, alpha, etc.)."
+        },
+        {
+          "name": "material_list",
+          "group": "material",
+          "description": "List all materials."
+        },
+        {
+          "name": "material_get",
+          "group": "material",
+          "description": "Get detailed info about a material."
+        },
+        {
+          "name": "modifier_group_info",
+          "group": "modifier_group",
+          "description": "Show details about a modifier."
+        },
+        {
+          "name": "modifier_group_add",
+          "group": "modifier_group",
+          "description": "Add a modifier to an object."
+        },
+        {
+          "name": "modifier_group_remove",
+          "group": "modifier_group",
+          "description": "Remove a modifier by index."
+        },
+        {
+          "name": "modifier_group_set",
+          "group": "modifier_group",
+          "description": "Set a modifier parameter."
+        },
+        {
+          "name": "modifier_group_list",
+          "group": "modifier_group",
+          "description": "List modifiers on an object."
+        },
+        {
+          "name": "camera_set",
+          "group": "camera",
+          "description": "Set a camera property."
+        },
+        {
+          "name": "camera_set_active",
+          "group": "camera",
+          "description": "Set the active camera."
+        },
+        {
+          "name": "camera_list",
+          "group": "camera",
+          "description": "List all cameras."
+        },
+        {
+          "name": "camera_dolly",
+          "group": "camera",
+          "description": "Animate camera position (dolly move)."
+        },
+        {
+          "name": "camera_orbit",
+          "group": "camera",
+          "description": "Orbit camera around a center point."
+        },
+        {
+          "name": "camera_pan",
+          "group": "camera",
+          "description": "Pan camera from one look-at target to another."
+        },
+        {
+          "name": "camera_zoom",
+          "group": "camera",
+          "description": "Animate camera field-of-view (zoom)."
+        },
+        {
+          "name": "camera_rack_focus",
+          "group": "camera",
+          "description": "Animate depth-of-field focus distance (rack focus)."
+        },
+        {
+          "name": "camera_crane",
+          "group": "camera",
+          "description": "Animate camera height (crane / jib move)."
+        },
+        {
+          "name": "camera_shake",
+          "group": "camera",
+          "description": "Add procedural camera shake with exponential decay."
+        },
+        {
+          "name": "shape_group_rectangle",
+          "group": "shape_group",
+          "description": "Create a rectangle shape."
+        },
+        {
+          "name": "shape_group_ellipse",
+          "group": "shape_group",
+          "description": "Create an ellipse shape."
+        },
+        {
+          "name": "shape_group_polygon",
+          "group": "shape_group",
+          "description": "Create a regular polygon shape."
+        },
+        {
+          "name": "shape_group_star",
+          "group": "shape_group",
+          "description": "Create a star shape."
+        },
+        {
+          "name": "shape_group_morph",
+          "group": "shape_group",
+          "description": "Animate shape-key morph between two objects."
+        },
+        {
+          "name": "shape_group_trim_path",
+          "group": "shape_group",
+          "description": "Animate curve trim path (draw-on effect)."
+        },
+        {
+          "name": "shape_group_offset_path",
+          "group": "shape_group",
+          "description": "Animate solidify modifier thickness (offset path)."
+        },
+        {
+          "name": "shape_group_repeater",
+          "group": "shape_group",
+          "description": "Create copies via Array modifier."
+        },
+        {
+          "name": "particles_group_emit_object",
+          "group": "particles_group",
+          "description": "Add a particle system to an existing object."
+        },
+        {
+          "name": "particles_group_emit_point",
+          "group": "particles_group",
+          "description": "Create an emitter at a world position."
+        },
+        {
+          "name": "particles_group_emit_text",
+          "group": "particles_group",
+          "description": "Convert a text object to mesh and add particles."
+        },
+        {
+          "name": "particles_group_preset_confetti",
+          "group": "particles_group",
+          "description": "Apply confetti burst preset."
+        },
+        {
+          "name": "particles_group_preset_sparks",
+          "group": "particles_group",
+          "description": "Apply sparks preset."
+        },
+        {
+          "name": "particles_group_preset_disintegrate",
+          "group": "particles_group",
+          "description": "Apply disintegrate preset (Explode modifier)."
+        },
+        {
+          "name": "particles_group_preset_data_stream",
+          "group": "particles_group",
+          "description": "Apply data-stream flowing particles preset."
+        },
+        {
+          "name": "compositor_group_glow",
+          "group": "compositor_group",
+          "description": "Add FOG_GLOW glare effect."
+        },
+        {
+          "name": "compositor_group_color_grade",
+          "group": "compositor_group",
+          "description": "Add color grading (Color Balance + Hue Saturation)."
+        },
+        {
+          "name": "compositor_group_chromatic_aberration",
+          "group": "compositor_group",
+          "description": "Add chromatic aberration effect."
+        },
+        {
+          "name": "compositor_group_lens_distortion",
+          "group": "compositor_group",
+          "description": "Add lens distortion effect."
+        },
+        {
+          "name": "compositor_group_vignette",
+          "group": "compositor_group",
+          "description": "Add vignette effect."
+        },
+        {
+          "name": "compositor_group_film_grain",
+          "group": "compositor_group",
+          "description": "Add film grain effect."
+        },
+        {
+          "name": "compositor_group_motion_blur",
+          "group": "compositor_group",
+          "description": "Add motion blur (Vector Blur node)."
+        },
+        {
+          "name": "compositor_group_depth_of_field",
+          "group": "compositor_group",
+          "description": "Add depth-of-field blur (Defocus node)."
+        },
+        {
+          "name": "compositor_group_bloom",
+          "group": "compositor_group",
+          "description": "Add bloom effect (Glare GHOSTS node)."
+        },
+        {
+          "name": "compositor_group_sharpen",
+          "group": "compositor_group",
+          "description": "Add sharpening (Filter SHARPEN node)."
+        },
+        {
+          "name": "light_add",
+          "group": "light",
+          "description": "Add a light to the scene."
+        },
+        {
+          "name": "light_set",
+          "group": "light",
+          "description": "Set a light property."
+        },
+        {
+          "name": "light_list",
+          "group": "light",
+          "description": "List all lights."
+        },
+        {
+          "name": "animation_remove_keyframe",
+          "group": "animation",
+          "description": "Remove a keyframe from an object."
+        },
+        {
+          "name": "animation_frame_range",
+          "group": "animation",
+          "description": "Set the animation frame range."
+        },
+        {
+          "name": "animation_fps",
+          "group": "animation",
+          "description": "Set the animation FPS."
+        },
+        {
+          "name": "animation_list_keyframes",
+          "group": "animation",
+          "description": "List keyframes for an object."
+        },
+        {
+          "name": "render_group_settings",
+          "group": "render_group",
+          "description": "Configure render settings."
+        },
+        {
+          "name": "render_group_info",
+          "group": "render_group",
+          "description": "Show current render settings."
+        },
+        {
+          "name": "render_group_presets",
+          "group": "render_group",
+          "description": "List available render presets."
+        },
+        {
+          "name": "render_group_execute",
+          "group": "render_group",
+          "description": "Render the scene (generates bpy script)."
+        },
+        {
+          "name": "render_group_script",
+          "group": "render_group",
+          "description": "Generate bpy script without rendering."
+        },
+        {
+          "name": "render_group_motion_blur",
+          "group": "render_group",
+          "description": "Configure motion blur settings."
+        },
+        {
+          "name": "render_group_ambient_occlusion",
+          "group": "render_group",
+          "description": "Configure ambient occlusion (EEVEE)."
+        },
+        {
+          "name": "render_group_hdri",
+          "group": "render_group",
+          "description": "Set up HDRI environment lighting."
+        },
+        {
+          "name": "render_group_transparent_background",
+          "group": "render_group",
+          "description": "Enable/disable transparent (alpha) film background."
+        },
+        {
+          "name": "render_group_film_exposure",
+          "group": "render_group",
+          "description": "Set film exposure (EV compensation)."
+        },
+        {
+          "name": "render_group_color_management",
+          "group": "render_group",
+          "description": "Configure scene color management (view transform + look)."
+        },
+        {
+          "name": "render_group_denoising",
+          "group": "render_group",
+          "description": "Enable/disable the Cycles denoiser."
+        },
+        {
+          "name": "text3d_group_explode",
+          "group": "text3d_group",
+          "description": "Create individual text objects per character."
+        },
+        {
+          "name": "text3d_group_typewriter",
+          "group": "text3d_group",
+          "description": "Animate per-character typewriter effect (scale 0→1)."
+        },
+        {
+          "name": "text3d_group_wave",
+          "group": "text3d_group",
+          "description": "Animate per-character sine-wave vertical offset."
+        },
+        {
+          "name": "text3d_group_bounce",
+          "group": "text3d_group",
+          "description": "Animate per-character drop with bounce easing."
+        },
+        {
+          "name": "text3d_group_scale_pop",
+          "group": "text3d_group",
+          "description": "Animate per-character scale with overshoot (ease_out_back)."
+        },
+        {
+          "name": "text3d_group_spiral_in",
+          "group": "text3d_group",
+          "description": "Animate per-character spiral-in from orbit."
+        },
+        {
+          "name": "text3d_group_extrude_in",
+          "group": "text3d_group",
+          "description": "Animate per-character extrusion depth from flat to 3D."
+        },
+        {
+          "name": "text3d_group_rotate_3d",
+          "group": "text3d_group",
+          "description": "Animate per-character 3D axis flip/rotation."
+        },
+        {
+          "name": "expression_group_wiggle",
+          "group": "expression_group",
+          "description": "Bake wiggle noise to per-frame keyframes."
+        },
+        {
+          "name": "expression_group_procedural",
+          "group": "expression_group",
+          "description": "Bake a procedural loop expression to per-frame keyframes."
+        },
+        {
+          "name": "session_status",
+          "group": "session",
+          "description": "Show session status."
+        },
+        {
+          "name": "session_undo",
+          "group": "session",
+          "description": "Undo the last operation."
+        },
+        {
+          "name": "session_redo",
+          "group": "session",
+          "description": "Redo the last undone operation."
+        },
+        {
+          "name": "session_history",
+          "group": "session",
+          "description": "Show undo history."
+        }
+      ]
     },
     {
       "name": "comfyui",
