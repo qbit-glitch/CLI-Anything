@@ -214,8 +214,8 @@ def extract_commands_from_cli(cli_path: Path) -> list[CommandGroup]:
                 # Collect until closing triple-quote
                 doc_lines = [stripped[3:]]
                 if stripped.endswith(q) and len(stripped) > 3:
-                    # Single-line docstring
-                    return stripped[3:].rstrip(q).strip()
+                    # Single-line docstring — slice off both opening and closing """
+                    return stripped[3:-3].strip()
                 for j in range(start_idx + offset + 1, min(start_idx + offset + 20, len(lines))):
                     l = lines[j]
                     if q in l:
@@ -235,14 +235,26 @@ def extract_commands_from_cli(cli_path: Path) -> list[CommandGroup]:
         # ---- group detection ----
         gm = _group_trigger.match(line)
         if gm:
+            # Extract explicit string argument from @xxx.group("name") if present
+            _group_name_arg = re.search(r'\.group\(\s*["\']([^"\']+)["\']', line)
             # Scan forward past additional decorators to reach def
             j = i + 1
             while j < len(lines) and _decorator.match(lines[j].strip()):
                 j += 1
             dm = _def_line.match(lines[j].strip()) if j < len(lines) else None
             if dm:
-                group_func = dm.group(1)
-                group_name = group_func.replace("_", " ").title()
+                group_func_name = dm.group(1)
+                # Skip root CLI entry points — these are not real command groups
+                if group_func_name in ("cli", "main"):
+                    i = j + 1
+                    continue
+                if _group_name_arg:
+                    # Use the Click decorator's string argument as the canonical name
+                    group_key_name = _group_name_arg.group(1)
+                    group_name = group_key_name.replace("_", " ").replace("-", " ").title()
+                else:
+                    group_key_name = group_func_name
+                    group_name = group_func_name.replace("_", " ").title()
                 doc = _docstring_after_def(j)
                 cg = CommandGroup(
                     name=group_name,
@@ -250,7 +262,9 @@ def extract_commands_from_cli(cli_path: Path) -> list[CommandGroup]:
                     commands=[]
                 )
                 groups.append(cg)
-                group_map[group_func.lower()] = cg
+                # Map both the decorator key and the function name to the group
+                group_map[group_key_name.lower().replace("-", "_")] = cg
+                group_map[group_func_name.lower()] = cg
             i = j + 1
             continue
 
@@ -258,6 +272,8 @@ def extract_commands_from_cli(cli_path: Path) -> list[CommandGroup]:
         cm = _cmd_trigger.match(line)
         if cm:
             deco_group_var = cm.group(1).lower()
+            # Extract explicit string argument from @xxx.command("name") if present
+            _cmd_name_arg = re.search(r'\.command\(\s*["\']([^"\']+)["\']', line)
             # Scan forward past additional decorators to reach def
             j = i + 1
             while j < len(lines) and _decorator.match(lines[j].strip()):
@@ -266,8 +282,10 @@ def extract_commands_from_cli(cli_path: Path) -> list[CommandGroup]:
             if dm:
                 cmd_func = dm.group(1)
                 doc = _docstring_after_def(j)
+                # Use Click decorator name when present, fall back to function name
+                cmd_name = _cmd_name_arg.group(1) if _cmd_name_arg else cmd_func.replace("_", "-")
                 cmd_info = CommandInfo(
-                    name=cmd_func.replace("_", "-"),
+                    name=cmd_name,
                     description=doc or f"Execute {cmd_func} operation."
                 )
                 # Match to group
@@ -546,7 +564,7 @@ def update_registry_commands(harness_path: str, registry_path: str) -> None:
     try:
         metadata = extract_cli_metadata(harness_path)
     except Exception as exc:
-        raise type(exc)(
+        raise RuntimeError(
             f"Failed to extract CLI metadata from '{harness_path}': {exc}"
         ) from exc
 

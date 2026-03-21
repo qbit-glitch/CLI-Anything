@@ -45,7 +45,200 @@
       "skill_md": "audacity/agent-harness/cli_anything/audacity/skills/SKILL.md",
       "category": "audio",
       "contributor": "CLI-Anything-Team",
-      "contributor_url": "https://github.com/HKUDS/CLI-Anything"
+      "contributor_url": "https://github.com/HKUDS/CLI-Anything",
+      "mcp_tool_prefix": "audacity",
+      "commands": [
+        {
+          "name": "project_new",
+          "group": "project",
+          "description": "Create a new project."
+        },
+        {
+          "name": "project_open",
+          "group": "project",
+          "description": "Open an existing project."
+        },
+        {
+          "name": "project_save",
+          "group": "project",
+          "description": "Save the current project."
+        },
+        {
+          "name": "project_info",
+          "group": "project",
+          "description": "Show project information."
+        },
+        {
+          "name": "project_settings",
+          "group": "project",
+          "description": "View or update project settings."
+        },
+        {
+          "name": "project_json",
+          "group": "project",
+          "description": "Print raw project JSON."
+        },
+        {
+          "name": "track_remove",
+          "group": "track",
+          "description": "Remove a track by index."
+        },
+        {
+          "name": "track_list",
+          "group": "track",
+          "description": "List all tracks."
+        },
+        {
+          "name": "track_set",
+          "group": "track",
+          "description": "Set a track property (name, mute, solo, volume, pan)."
+        },
+        {
+          "name": "clip_import",
+          "group": "clip",
+          "description": "Probe/import an audio file (show metadata)."
+        },
+        {
+          "name": "clip_add",
+          "group": "clip",
+          "description": "Add an audio clip to a track."
+        },
+        {
+          "name": "clip_remove",
+          "group": "clip",
+          "description": "Remove a clip from a track."
+        },
+        {
+          "name": "clip_trim",
+          "group": "clip",
+          "description": "Trim a clip's start and/or end."
+        },
+        {
+          "name": "clip_split",
+          "group": "clip",
+          "description": "Split a clip at a given time position."
+        },
+        {
+          "name": "clip_move",
+          "group": "clip",
+          "description": "Move a clip to a new start time."
+        },
+        {
+          "name": "clip_list",
+          "group": "clip",
+          "description": "List clips on a track."
+        },
+        {
+          "name": "effect_info",
+          "group": "effect",
+          "description": "Show details about an effect."
+        },
+        {
+          "name": "effect_add",
+          "group": "effect",
+          "description": "Add an effect to a track."
+        },
+        {
+          "name": "effect_remove",
+          "group": "effect",
+          "description": "Remove an effect by index."
+        },
+        {
+          "name": "effect_set",
+          "group": "effect",
+          "description": "Set an effect parameter."
+        },
+        {
+          "name": "effect_list",
+          "group": "effect",
+          "description": "List effects on a track."
+        },
+        {
+          "name": "selection_set",
+          "group": "selection",
+          "description": "Set selection range."
+        },
+        {
+          "name": "selection_all",
+          "group": "selection",
+          "description": "Select all (entire project duration)."
+        },
+        {
+          "name": "selection_none",
+          "group": "selection",
+          "description": "Clear selection."
+        },
+        {
+          "name": "selection_info",
+          "group": "selection",
+          "description": "Show current selection."
+        },
+        {
+          "name": "label_add",
+          "group": "label",
+          "description": "Add a label at a time position."
+        },
+        {
+          "name": "label_remove",
+          "group": "label",
+          "description": "Remove a label by index."
+        },
+        {
+          "name": "label_list",
+          "group": "label",
+          "description": "List all labels."
+        },
+        {
+          "name": "media_probe",
+          "group": "media",
+          "description": "Analyze an audio file."
+        },
+        {
+          "name": "media_check",
+          "group": "media",
+          "description": "Check that all referenced audio files exist."
+        },
+        {
+          "name": "export_presets",
+          "group": "export",
+          "description": "List export presets."
+        },
+        {
+          "name": "export_preset_info",
+          "group": "export",
+          "description": "Show preset details."
+        },
+        {
+          "name": "export_render",
+          "group": "export",
+          "description": "Render the project to an audio file."
+        },
+        {
+          "name": "sync_preview",
+          "group": "sync",
+          "description": "Preview sync markers without exporting."
+        },
+        {
+          "name": "session_status",
+          "group": "session",
+          "description": "Show session status."
+        },
+        {
+          "name": "session_undo",
+          "group": "session",
+          "description": "Undo the last operation."
+        },
+        {
+          "name": "session_redo",
+          "group": "session",
+          "description": "Redo the last undone operation."
+        },
+        {
+          "name": "session_history",
+          "group": "session",
+          "description": "Show undo history."
+        }
+      ]
     },
     {
       "name": "blender",
@@ -93,33 +286,33 @@
           "description": "Print raw scene JSON."
         },
         {
-          "name": "object_group_remove",
-          "group": "object_group",
+          "name": "object_remove",
+          "group": "object",
           "description": "Remove an object by index."
         },
         {
-          "name": "object_group_duplicate",
-          "group": "object_group",
+          "name": "object_duplicate",
+          "group": "object",
           "description": "Duplicate an object."
         },
         {
-          "name": "object_group_transform",
-          "group": "object_group",
+          "name": "object_transform",
+          "group": "object",
           "description": "Transform an object (translate, rotate, scale)."
         },
         {
-          "name": "object_group_set",
-          "group": "object_group",
+          "name": "object_set",
+          "group": "object",
           "description": "Set an object property (name, visible, location, rotation, scale, parent)."
         },
         {
-          "name": "object_group_list",
-          "group": "object_group",
+          "name": "object_list",
+          "group": "object",
           "description": "List all objects."
         },
         {
-          "name": "object_group_get",
-          "group": "object_group",
+          "name": "object_get",
+          "group": "object",
           "description": "Get detailed info about an object."
         },
         {
@@ -148,28 +341,28 @@
           "description": "Get detailed info about a material."
         },
         {
-          "name": "modifier_group_info",
-          "group": "modifier_group",
+          "name": "modifier_info",
+          "group": "modifier",
           "description": "Show details about a modifier."
         },
         {
-          "name": "modifier_group_add",
-          "group": "modifier_group",
+          "name": "modifier_add",
+          "group": "modifier",
           "description": "Add a modifier to an object."
         },
         {
-          "name": "modifier_group_remove",
-          "group": "modifier_group",
+          "name": "modifier_remove",
+          "group": "modifier",
           "description": "Remove a modifier by index."
         },
         {
-          "name": "modifier_group_set",
-          "group": "modifier_group",
+          "name": "modifier_set",
+          "group": "modifier",
           "description": "Set a modifier parameter."
         },
         {
-          "name": "modifier_group_list",
-          "group": "modifier_group",
+          "name": "modifier_list",
+          "group": "modifier",
           "description": "List modifiers on an object."
         },
         {
@@ -223,128 +416,128 @@
           "description": "Add procedural camera shake with exponential decay."
         },
         {
-          "name": "shape_group_rectangle",
-          "group": "shape_group",
+          "name": "shape_rectangle",
+          "group": "shape",
           "description": "Create a rectangle shape."
         },
         {
-          "name": "shape_group_ellipse",
-          "group": "shape_group",
+          "name": "shape_ellipse",
+          "group": "shape",
           "description": "Create an ellipse shape."
         },
         {
-          "name": "shape_group_polygon",
-          "group": "shape_group",
+          "name": "shape_polygon",
+          "group": "shape",
           "description": "Create a regular polygon shape."
         },
         {
-          "name": "shape_group_star",
-          "group": "shape_group",
+          "name": "shape_star",
+          "group": "shape",
           "description": "Create a star shape."
         },
         {
-          "name": "shape_group_morph",
-          "group": "shape_group",
+          "name": "shape_morph",
+          "group": "shape",
           "description": "Animate shape-key morph between two objects."
         },
         {
-          "name": "shape_group_trim_path",
-          "group": "shape_group",
+          "name": "shape_trim_path",
+          "group": "shape",
           "description": "Animate curve trim path (draw-on effect)."
         },
         {
-          "name": "shape_group_offset_path",
-          "group": "shape_group",
+          "name": "shape_offset_path",
+          "group": "shape",
           "description": "Animate solidify modifier thickness (offset path)."
         },
         {
-          "name": "shape_group_repeater",
-          "group": "shape_group",
+          "name": "shape_repeater",
+          "group": "shape",
           "description": "Create copies via Array modifier."
         },
         {
-          "name": "particles_group_emit_object",
-          "group": "particles_group",
+          "name": "particles_emit_object",
+          "group": "particles",
           "description": "Add a particle system to an existing object."
         },
         {
-          "name": "particles_group_emit_point",
-          "group": "particles_group",
+          "name": "particles_emit_point",
+          "group": "particles",
           "description": "Create an emitter at a world position."
         },
         {
-          "name": "particles_group_emit_text",
-          "group": "particles_group",
+          "name": "particles_emit_text",
+          "group": "particles",
           "description": "Convert a text object to mesh and add particles."
         },
         {
-          "name": "particles_group_preset_confetti",
-          "group": "particles_group",
+          "name": "particles_preset_confetti",
+          "group": "particles",
           "description": "Apply confetti burst preset."
         },
         {
-          "name": "particles_group_preset_sparks",
-          "group": "particles_group",
+          "name": "particles_preset_sparks",
+          "group": "particles",
           "description": "Apply sparks preset."
         },
         {
-          "name": "particles_group_preset_disintegrate",
-          "group": "particles_group",
+          "name": "particles_preset_disintegrate",
+          "group": "particles",
           "description": "Apply disintegrate preset (Explode modifier)."
         },
         {
-          "name": "particles_group_preset_data_stream",
-          "group": "particles_group",
+          "name": "particles_preset_data_stream",
+          "group": "particles",
           "description": "Apply data-stream flowing particles preset."
         },
         {
-          "name": "compositor_group_glow",
-          "group": "compositor_group",
+          "name": "compositor_glow",
+          "group": "compositor",
           "description": "Add FOG_GLOW glare effect."
         },
         {
-          "name": "compositor_group_color_grade",
-          "group": "compositor_group",
+          "name": "compositor_color_grade",
+          "group": "compositor",
           "description": "Add color grading (Color Balance + Hue Saturation)."
         },
         {
-          "name": "compositor_group_chromatic_aberration",
-          "group": "compositor_group",
+          "name": "compositor_chromatic_aberration",
+          "group": "compositor",
           "description": "Add chromatic aberration effect."
         },
         {
-          "name": "compositor_group_lens_distortion",
-          "group": "compositor_group",
+          "name": "compositor_lens_distortion",
+          "group": "compositor",
           "description": "Add lens distortion effect."
         },
         {
-          "name": "compositor_group_vignette",
-          "group": "compositor_group",
+          "name": "compositor_vignette",
+          "group": "compositor",
           "description": "Add vignette effect."
         },
         {
-          "name": "compositor_group_film_grain",
-          "group": "compositor_group",
+          "name": "compositor_film_grain",
+          "group": "compositor",
           "description": "Add film grain effect."
         },
         {
-          "name": "compositor_group_motion_blur",
-          "group": "compositor_group",
+          "name": "compositor_motion_blur",
+          "group": "compositor",
           "description": "Add motion blur (Vector Blur node)."
         },
         {
-          "name": "compositor_group_depth_of_field",
-          "group": "compositor_group",
+          "name": "compositor_depth_of_field",
+          "group": "compositor",
           "description": "Add depth-of-field blur (Defocus node)."
         },
         {
-          "name": "compositor_group_bloom",
-          "group": "compositor_group",
+          "name": "compositor_bloom",
+          "group": "compositor",
           "description": "Add bloom effect (Glare GHOSTS node)."
         },
         {
-          "name": "compositor_group_sharpen",
-          "group": "compositor_group",
+          "name": "compositor_sharpen",
+          "group": "compositor",
           "description": "Add sharpening (Filter SHARPEN node)."
         },
         {
@@ -383,113 +576,113 @@
           "description": "List keyframes for an object."
         },
         {
-          "name": "render_group_settings",
-          "group": "render_group",
+          "name": "render_settings",
+          "group": "render",
           "description": "Configure render settings."
         },
         {
-          "name": "render_group_info",
-          "group": "render_group",
+          "name": "render_info",
+          "group": "render",
           "description": "Show current render settings."
         },
         {
-          "name": "render_group_presets",
-          "group": "render_group",
+          "name": "render_presets",
+          "group": "render",
           "description": "List available render presets."
         },
         {
-          "name": "render_group_execute",
-          "group": "render_group",
+          "name": "render_execute",
+          "group": "render",
           "description": "Render the scene (generates bpy script)."
         },
         {
-          "name": "render_group_script",
-          "group": "render_group",
+          "name": "render_script",
+          "group": "render",
           "description": "Generate bpy script without rendering."
         },
         {
-          "name": "render_group_motion_blur",
-          "group": "render_group",
+          "name": "render_motion_blur",
+          "group": "render",
           "description": "Configure motion blur settings."
         },
         {
-          "name": "render_group_ambient_occlusion",
-          "group": "render_group",
+          "name": "render_ambient_occlusion",
+          "group": "render",
           "description": "Configure ambient occlusion (EEVEE)."
         },
         {
-          "name": "render_group_hdri",
-          "group": "render_group",
+          "name": "render_hdri",
+          "group": "render",
           "description": "Set up HDRI environment lighting."
         },
         {
-          "name": "render_group_transparent_background",
-          "group": "render_group",
+          "name": "render_transparent_background",
+          "group": "render",
           "description": "Enable/disable transparent (alpha) film background."
         },
         {
-          "name": "render_group_film_exposure",
-          "group": "render_group",
+          "name": "render_film_exposure",
+          "group": "render",
           "description": "Set film exposure (EV compensation)."
         },
         {
-          "name": "render_group_color_management",
-          "group": "render_group",
+          "name": "render_color_management",
+          "group": "render",
           "description": "Configure scene color management (view transform + look)."
         },
         {
-          "name": "render_group_denoising",
-          "group": "render_group",
+          "name": "render_denoising",
+          "group": "render",
           "description": "Enable/disable the Cycles denoiser."
         },
         {
-          "name": "text3d_group_explode",
-          "group": "text3d_group",
+          "name": "text3d_explode",
+          "group": "text3d",
           "description": "Create individual text objects per character."
         },
         {
-          "name": "text3d_group_typewriter",
-          "group": "text3d_group",
+          "name": "text3d_typewriter",
+          "group": "text3d",
           "description": "Animate per-character typewriter effect (scale 0→1)."
         },
         {
-          "name": "text3d_group_wave",
-          "group": "text3d_group",
+          "name": "text3d_wave",
+          "group": "text3d",
           "description": "Animate per-character sine-wave vertical offset."
         },
         {
-          "name": "text3d_group_bounce",
-          "group": "text3d_group",
+          "name": "text3d_bounce",
+          "group": "text3d",
           "description": "Animate per-character drop with bounce easing."
         },
         {
-          "name": "text3d_group_scale_pop",
-          "group": "text3d_group",
+          "name": "text3d_scale_pop",
+          "group": "text3d",
           "description": "Animate per-character scale with overshoot (ease_out_back)."
         },
         {
-          "name": "text3d_group_spiral_in",
-          "group": "text3d_group",
+          "name": "text3d_spiral_in",
+          "group": "text3d",
           "description": "Animate per-character spiral-in from orbit."
         },
         {
-          "name": "text3d_group_extrude_in",
-          "group": "text3d_group",
+          "name": "text3d_extrude_in",
+          "group": "text3d",
           "description": "Animate per-character extrusion depth from flat to 3D."
         },
         {
-          "name": "text3d_group_rotate_3d",
-          "group": "text3d_group",
+          "name": "text3d_rotate_3d",
+          "group": "text3d",
           "description": "Animate per-character 3D axis flip/rotation."
         },
         {
-          "name": "expression_group_wiggle",
-          "group": "expression_group",
+          "name": "expression_wiggle",
+          "group": "expression",
           "description": "Bake wiggle noise to per-frame keyframes."
         },
         {
-          "name": "expression_group_procedural",
-          "group": "expression_group",
+          "name": "expression_procedural",
+          "group": "expression",
           "description": "Bake a procedural loop expression to per-frame keyframes."
         },
         {
@@ -554,7 +747,205 @@
       "skill_md": "gimp/agent-harness/cli_anything/gimp/skills/SKILL.md",
       "category": "image",
       "contributor": "CLI-Anything-Team",
-      "contributor_url": "https://github.com/HKUDS/CLI-Anything"
+      "contributor_url": "https://github.com/HKUDS/CLI-Anything",
+      "mcp_tool_prefix": "gimp",
+      "commands": [
+        {
+          "name": "project_new",
+          "group": "project",
+          "description": "Create a new project."
+        },
+        {
+          "name": "project_open",
+          "group": "project",
+          "description": "Open an existing project."
+        },
+        {
+          "name": "project_save",
+          "group": "project",
+          "description": "Save the current project."
+        },
+        {
+          "name": "project_info",
+          "group": "project",
+          "description": "Show project information."
+        },
+        {
+          "name": "project_profiles",
+          "group": "project",
+          "description": "List available canvas profiles."
+        },
+        {
+          "name": "project_json",
+          "group": "project",
+          "description": "Print raw project JSON."
+        },
+        {
+          "name": "layer_add_from_file",
+          "group": "layer",
+          "description": "Add a layer from an image file."
+        },
+        {
+          "name": "layer_list",
+          "group": "layer",
+          "description": "List all layers."
+        },
+        {
+          "name": "layer_remove",
+          "group": "layer",
+          "description": "Remove a layer by index."
+        },
+        {
+          "name": "layer_duplicate",
+          "group": "layer",
+          "description": "Duplicate a layer."
+        },
+        {
+          "name": "layer_move",
+          "group": "layer",
+          "description": "Move a layer to a new position."
+        },
+        {
+          "name": "layer_set",
+          "group": "layer",
+          "description": "Set a layer property (name, opacity, visible, mode, offset_x, offset_y)."
+        },
+        {
+          "name": "layer_flatten",
+          "group": "layer",
+          "description": "Flatten all visible layers."
+        },
+        {
+          "name": "layer_merge_down",
+          "group": "layer",
+          "description": "Merge a layer with the one below it."
+        },
+        {
+          "name": "canvas_info",
+          "group": "canvas",
+          "description": "Show canvas information."
+        },
+        {
+          "name": "canvas_crop",
+          "group": "canvas",
+          "description": "Crop the canvas to a rectangle."
+        },
+        {
+          "name": "canvas_mode",
+          "group": "canvas",
+          "description": "Set the canvas color mode."
+        },
+        {
+          "name": "canvas_dpi",
+          "group": "canvas",
+          "description": "Set the canvas DPI."
+        },
+        {
+          "name": "filter_info",
+          "group": "filter",
+          "description": "Show details about a filter."
+        },
+        {
+          "name": "filter_add",
+          "group": "filter",
+          "description": "Add a filter to a layer."
+        },
+        {
+          "name": "filter_remove",
+          "group": "filter",
+          "description": "Remove a filter by index."
+        },
+        {
+          "name": "filter_set",
+          "group": "filter",
+          "description": "Set a filter parameter."
+        },
+        {
+          "name": "filter_list",
+          "group": "filter",
+          "description": "List filters on a layer."
+        },
+        {
+          "name": "media_probe",
+          "group": "media",
+          "description": "Analyze an image file."
+        },
+        {
+          "name": "media_list",
+          "group": "media",
+          "description": "List media files referenced in the project."
+        },
+        {
+          "name": "media_check",
+          "group": "media",
+          "description": "Check that all referenced media files exist."
+        },
+        {
+          "name": "media_histogram",
+          "group": "media",
+          "description": "Show histogram analysis of an image."
+        },
+        {
+          "name": "export_presets",
+          "group": "export",
+          "description": "List export presets."
+        },
+        {
+          "name": "export_preset_info",
+          "group": "export",
+          "description": "Show preset details."
+        },
+        {
+          "name": "export_render",
+          "group": "export",
+          "description": "Render the project to an image file."
+        },
+        {
+          "name": "session_status",
+          "group": "session",
+          "description": "Show session status."
+        },
+        {
+          "name": "session_undo",
+          "group": "session",
+          "description": "Undo the last operation."
+        },
+        {
+          "name": "session_redo",
+          "group": "session",
+          "description": "Redo the last undone operation."
+        },
+        {
+          "name": "session_history",
+          "group": "session",
+          "description": "Show undo history."
+        },
+        {
+          "name": "draw_text",
+          "group": "draw",
+          "description": "Draw text on a layer (by converting it to a text layer)."
+        },
+        {
+          "name": "draw_rect",
+          "group": "draw",
+          "description": "Draw a rectangle (stored as drawing operation)."
+        },
+        {
+          "name": "animation_settings",
+          "group": "animation",
+          "description": "View or update animation settings."
+        },
+        {
+          "name": "animation_list_keyframes",
+          "group": "animation",
+          "description": "List keyframes, optionally filtered."
+        },
+        {
+          "name": "animation_sequence",
+          "group": "animation",
+          "description": "Generate a frame sequence to a directory."
+        }
+      ]
     },
     {
       "name": "inkscape",
