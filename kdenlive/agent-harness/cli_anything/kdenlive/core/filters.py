@@ -103,8 +103,17 @@ FILTER_REGISTRY = {
 }
 
 
+def _is_keyframed(value: Any) -> bool:
+    """Check if a parameter value is a keyframed dict."""
+    return isinstance(value, dict) and value.get("keyframed") is True
+
+
 def _validate_filter_params(filter_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
-    """Validate and fill defaults for filter parameters."""
+    """Validate and fill defaults for filter parameters.
+
+    Keyframed parameters (dicts with "keyframed": True) are passed through
+    without scalar validation, since their values are time-varying.
+    """
     spec = FILTER_REGISTRY[filter_name]
     param_specs = spec["params"]
 
@@ -118,6 +127,12 @@ def _validate_filter_params(filter_name: str, params: Dict[str, Any]) -> Dict[st
     result = {}
     for pname, pspec in param_specs.items():
         value = params.get(pname, pspec["default"])
+
+        # Pass through keyframed dicts without scalar validation
+        if _is_keyframed(value):
+            result[pname] = value
+            continue
+
         ptype = pspec["type"]
 
         if ptype == "float":

@@ -71,6 +71,10 @@ def generate_full_script(
     lines.extend(_gen_keyframes(project))
     lines.append("")
 
+    # VSE strips
+    lines.extend(_gen_vse(project))
+    lines.append("")
+
     # Render output
     lines.extend(_gen_render_output(project, output_path, frame, animation))
 
@@ -241,6 +245,36 @@ def _gen_objects(project: Dict[str, Any]) -> List[str]:
             lines.append(f"bpy.ops.mesh.primitive_monkey_add(location=({loc[0]}, {loc[1]}, {loc[2]}))")
         elif mesh_type == "empty":
             lines.append(f"bpy.ops.object.empty_add(location=({loc[0]}, {loc[1]}, {loc[2]}))")
+        elif mesh_type == "text" or obj.get("type") == "FONT":
+            text_params = obj.get("text_params", {})
+            body = text_params.get("body", "Text")
+            size = text_params.get("size", 1.0)
+            extrude = text_params.get("extrude", 0.0)
+            align_x = text_params.get("align_x", "CENTER")
+            lines.append(f"bpy.ops.object.text_add(location=({loc[0]}, {loc[1]}, {loc[2]}))")
+            lines.append("obj = bpy.context.active_object")
+            lines.append(f"obj.name = '{name}'")
+            lines.append(f"obj.data.body = '{body}'")
+            lines.append(f"obj.data.size = {size}")
+            lines.append(f"obj.data.extrude = {extrude}")
+            lines.append(f"obj.data.align_x = '{align_x}'")
+            lines.append(f"obj.rotation_euler = (math.radians({rot[0]}), math.radians({rot[1]}), math.radians({rot[2]}))")
+            lines.append(f"obj.scale = ({scl[0]}, {scl[1]}, {scl[2]})")
+
+            if not obj.get("visible", True):
+                lines.append("obj.hide_render = True")
+                lines.append("obj.hide_viewport = True")
+
+            # Assign material
+            mat_id = obj.get("material")
+            if mat_id is not None and mat_id in mat_id_to_name:
+                mat_name = mat_id_to_name[mat_id]
+                var_name = _safe_var_name(mat_name)
+                lines.append(f"if 'mat_{var_name}' in dir():")
+                lines.append(f"    obj.data.materials.append(mat_{var_name})")
+
+            lines.append("")
+            continue
         else:
             lines.append(f"# Unknown mesh type: {mesh_type}")
             continue
@@ -463,6 +497,116 @@ def _gen_keyframes(project: Dict[str, Any]) -> List[str]:
                 hide_val = "False" if value else "True"
                 lines.append(f"    obj.hide_render = {hide_val}")
                 lines.append(f"    obj.keyframe_insert(data_path='hide_render', frame={frame})")
+
+        lines.append("")
+
+    return lines
+
+
+def _gen_vse(project: Dict[str, Any]) -> List[str]:
+    """Generate VSE (Video Sequence Editor) strip code."""
+    vse = project.get("vse", {})
+    strips = vse.get("strips", [])
+
+    if not strips:
+        return ["# ── VSE Strips ──────────────────────────────────────────────", "# (none)"]
+
+    lines = [
+        "# ── VSE Strips ──────────────────────────────────────────────",
+        "# Ensure sequencer exists",
+        "if not scene.sequence_editor:",
+        "    scene.sequence_editor_create()",
+        "seq_editor = scene.sequence_editor",
+        "",
+    ]
+
+    for i, strip in enumerate(strips):
+        strip_type = strip.get("type", "")
+        name = strip.get("name", f"Strip_{i}")
+        channel = strip.get("channel", 1)
+        frame_start = strip.get("frame_start", 1)
+        frame_end = strip.get("frame_end", frame_start + 100)
+        source = strip.get("source", "")
+        var_name = f"strip_{_safe_var_name(name)}"
+
+        lines.append(f"# Strip: {name}")
+
+        if strip_type == "movie":
+            lines.append(
+                f"{var_name} = seq_editor.sequences.new_movie("
+                f"'{name}', r'{source}', {channel}, {frame_start})"
+            )
+        elif strip_type == "image":
+            lines.append(f"# Image strip from: {source}")
+            lines.append(
+                f"{var_name} = seq_editor.sequences.new_image("
+                f"'{name}', r'{source}', {channel}, {frame_start})"
+            )
+        elif strip_type == "sound":
+            lines.append(
+                f"{var_name} = seq_editor.sequences.new_sound("
+                f"'{name}', r'{source}', {channel}, {frame_start})"
+            )
+        elif strip_type == "color":
+            color = strip.get("color", [1.0, 1.0, 1.0])
+            lines.append(
+                f"{var_name} = seq_editor.sequences.new_effect("
+                f"'{name}', 'COLOR', {channel}, {frame_start}, frame_end={frame_end})"
+            )
+            lines.append(f"{var_name}.color = ({color[0]}, {color[1]}, {color[2]})")
+        elif strip_type == "text":
+            text = strip.get("text", "Text")
+            font_size = strip.get("font_size", 48)
+            lines.append(
+                f"{var_name} = seq_editor.sequences.new_effect("
+                f"'{name}', 'TEXT', {channel}, {frame_start}, frame_end={frame_end})"
+            )
+            lines.append(f"{var_name}.text = '{text}'")
+            lines.append(f"{var_name}.font_size = {font_size}")
+        elif strip_type == "adjustment":
+            lines.append(
+                f"{var_name} = seq_editor.sequences.new_effect("
+                f"'{name}', 'ADJUSTMENT', {channel}, {frame_start}, frame_end={frame_end})"
+            )
+        elif strip_type == "transition":
+            trans_bpy_type = strip.get("bpy_type", "CROSS")
+            lines.append(
+                f"{var_name} = seq_editor.sequences.new_effect("
+                f"'{name}', '{trans_bpy_type}', {channel}, {frame_start}, "
+                f"frame_end={frame_end})"
+            )
+        else:
+            lines.append(f"# Unknown strip type: {strip_type}")
+            continue
+
+        # Common properties
+        blend_type = strip.get("blend_type", "REPLACE")
+        opacity = strip.get("opacity", 1.0)
+        mute = strip.get("mute", False)
+
+        if blend_type != "REPLACE":
+            lines.append(f"{var_name}.blend_type = '{blend_type}'")
+        if opacity != 1.0:
+            lines.append(f"{var_name}.blend_alpha = {opacity}")
+        if mute:
+            lines.append(f"{var_name}.mute = True")
+
+        # Effects on this strip
+        for effect in strip.get("effects", []):
+            eff_type = effect.get("bpy_type", "")
+            eff_params = effect.get("params", {})
+            eff_var = f"eff_{_safe_var_name(name)}_{effect['type']}"
+            lines.append(
+                f"{eff_var} = seq_editor.sequences.new_effect("
+                f"'{name}_{effect['type']}', '{eff_type}', "
+                f"{channel + 1}, {frame_start}, frame_end={frame_end}, "
+                f"seq1={var_name})"
+            )
+            for pk, pv in eff_params.items():
+                if isinstance(pv, str):
+                    lines.append(f"{eff_var}.{pk} = '{pv}'")
+                else:
+                    lines.append(f"{eff_var}.{pk} = {pv}")
 
         lines.append("")
 

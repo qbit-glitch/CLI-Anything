@@ -16,7 +16,14 @@ MESH_PRIMITIVES = {
     "empty": {},
 }
 
-OBJECT_TYPES = ["MESH", "EMPTY", "ARMATURE", "CURVE", "LATTICE"]
+OBJECT_TYPES = ["MESH", "EMPTY", "ARMATURE", "CURVE", "LATTICE", "FONT"]
+
+TEXT_DEFAULTS = {
+    "body": "Text",
+    "font_size": 1.0,
+    "extrude": 0.0,
+    "align_x": "CENTER",
+}
 
 
 def _next_id(project: Dict[str, Any], collection_key: str = "objects") -> int:
@@ -293,3 +300,80 @@ def list_objects(project: Dict[str, Any]) -> List[Dict[str, Any]]:
             "keyframe_count": len(obj.get("keyframes", [])),
         })
     return result
+
+
+def add_text_object(
+    project: Dict[str, Any],
+    body: str = "Text",
+    name: Optional[str] = None,
+    location: Optional[List[float]] = None,
+    rotation: Optional[List[float]] = None,
+    scale: Optional[List[float]] = None,
+    font_size: float = 1.0,
+    extrude: float = 0.0,
+    align_x: str = "CENTER",
+) -> Dict[str, Any]:
+    """Add a text (font) object to the scene.
+
+    Args:
+        project: The scene dict
+        body: Text content to display
+        name: Object name (auto-generated if None)
+        location: [x, y, z] location (default [0, 0, 0])
+        rotation: [x, y, z] rotation in degrees (default [0, 0, 0])
+        scale: [x, y, z] scale (default [1, 1, 1])
+        font_size: Font size (default 1.0)
+        extrude: Extrusion depth for 3D text (default 0.0)
+        align_x: Horizontal alignment: LEFT, CENTER, RIGHT (default CENTER)
+
+    Returns:
+        The new object dict
+    """
+    valid_alignments = ("LEFT", "CENTER", "RIGHT")
+    align_x = align_x.upper()
+    if align_x not in valid_alignments:
+        raise ValueError(
+            f"Invalid align_x: {align_x}. Valid: {list(valid_alignments)}"
+        )
+
+    if location is not None and len(location) != 3:
+        raise ValueError(f"Location must have 3 components [x, y, z], got {len(location)}")
+    if rotation is not None and len(rotation) != 3:
+        raise ValueError(f"Rotation must have 3 components [x, y, z], got {len(rotation)}")
+    if scale is not None and len(scale) != 3:
+        raise ValueError(f"Scale must have 3 components [x, y, z], got {len(scale)}")
+
+    base_name = name or "Text"
+    obj_name = _unique_name(project, base_name, "objects")
+
+    obj = {
+        "id": _next_id(project, "objects"),
+        "name": obj_name,
+        "type": "FONT",
+        "mesh_type": "text",
+        "location": list(location) if location else [0.0, 0.0, 0.0],
+        "rotation": list(rotation) if rotation else [0.0, 0.0, 0.0],
+        "scale": list(scale) if scale else [1.0, 1.0, 1.0],
+        "visible": True,
+        "material": None,
+        "modifiers": [],
+        "keyframes": [],
+        "parent": None,
+        "text_params": {
+            "body": body,
+            "size": font_size,
+            "extrude": extrude,
+            "align_x": align_x,
+        },
+    }
+
+    if "objects" not in project:
+        project["objects"] = []
+    project["objects"].append(obj)
+
+    # Add to first collection if it exists
+    collections = project.get("collections", [])
+    if collections:
+        collections[0]["objects"].append(obj["id"])
+
+    return obj

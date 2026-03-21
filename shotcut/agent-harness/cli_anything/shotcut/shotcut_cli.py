@@ -27,10 +27,14 @@ from cli_anything.shotcut.core.session import Session
 from cli_anything.shotcut.core import project as proj_mod
 from cli_anything.shotcut.core import timeline as tl_mod
 from cli_anything.shotcut.core import filters as filt_mod
+from cli_anything.shotcut.core import keyframes as kf_mod
 from cli_anything.shotcut.core import media as media_mod
 from cli_anything.shotcut.core import export as export_mod
 from cli_anything.shotcut.core import transitions as trans_mod
 from cli_anything.shotcut.core import compositing as comp_mod
+from cli_anything.shotcut.core import sync as sync_mod
+from cli_anything.shotcut.core import titles as title_mod
+from cli_anything.shotcut.core import masking as mask_mod
 
 # Global session state (persists across commands in REPL mode)
 _session: Optional[Session] = None
@@ -565,6 +569,85 @@ def filter_list(track_index, clip_index):
 
 
 # ============================================================================
+# Keyframe commands
+# ============================================================================
+
+@cli.group("keyframe")
+def keyframe_group():
+    """Keyframe animation commands."""
+    pass
+
+
+@keyframe_group.command("add")
+@click.argument("time")
+@click.argument("param")
+@click.argument("value")
+@click.option("--easing", "-e", type=click.Choice(kf_mod.EASING_TYPES),
+              default="linear", help="Easing type")
+@click.option("--track", "track_index", type=int, default=None)
+@click.option("--clip", "clip_index", type=int, default=None)
+@click.option("--filter", "filter_index", type=int, default=0,
+              help="Filter index (default: 0)")
+@handle_error
+def keyframe_add(time, param, value, easing, track_index, clip_index, filter_index):
+    """Add a keyframe to a filter parameter."""
+    session = get_session()
+    result = kf_mod.add_keyframe(session, time, param, value, easing=easing,
+                                  track_index=track_index, clip_index=clip_index,
+                                  filter_index=filter_index)
+    output(result, f"Added keyframe at {time}")
+
+
+@keyframe_group.command("remove")
+@click.argument("time")
+@click.argument("param")
+@click.option("--track", "track_index", type=int, default=None)
+@click.option("--clip", "clip_index", type=int, default=None)
+@click.option("--filter", "filter_index", type=int, default=0)
+@handle_error
+def keyframe_remove(time, param, track_index, clip_index, filter_index):
+    """Remove a keyframe at a specific time."""
+    session = get_session()
+    result = kf_mod.remove_keyframe(session, time, param,
+                                     track_index=track_index,
+                                     clip_index=clip_index,
+                                     filter_index=filter_index)
+    output(result, f"Removed keyframe at {time}")
+
+
+@keyframe_group.command("list")
+@click.argument("param")
+@click.option("--track", "track_index", type=int, default=None)
+@click.option("--clip", "clip_index", type=int, default=None)
+@click.option("--filter", "filter_index", type=int, default=0)
+@handle_error
+def keyframe_list(param, track_index, clip_index, filter_index):
+    """List keyframes for a filter parameter."""
+    session = get_session()
+    result = kf_mod.list_keyframes(session, param,
+                                    track_index=track_index,
+                                    clip_index=clip_index,
+                                    filter_index=filter_index)
+    output(result, f"Keyframes for {param}:")
+
+
+@keyframe_group.command("clear")
+@click.argument("param")
+@click.option("--track", "track_index", type=int, default=None)
+@click.option("--clip", "clip_index", type=int, default=None)
+@click.option("--filter", "filter_index", type=int, default=0)
+@handle_error
+def keyframe_clear(param, track_index, clip_index, filter_index):
+    """Clear all keyframes from a parameter."""
+    session = get_session()
+    result = kf_mod.clear_keyframes(session, param,
+                                     track_index=track_index,
+                                     clip_index=clip_index,
+                                     filter_index=filter_index)
+    output(result, f"Cleared keyframes for {param}")
+
+
+# ============================================================================
 # Media commands
 # ============================================================================
 
@@ -808,6 +891,234 @@ def composite_pip(track_index, clip_index, x, y, width, height, opacity):
     result = comp_mod.pip_position(session, track_index, clip_index,
                                     x, y, width, height, opacity)
     output(result, f"PIP set on track {track_index}, clip {clip_index}")
+
+
+# ============================================================================
+# Sync commands
+# ============================================================================
+
+@cli.group("sync")
+def sync_group():
+    """Audio sync operations: import markers from Audacity, list markers."""
+    pass
+
+
+@sync_group.command("import")
+@click.argument("sync_file")
+@click.option("--audio", "audio_file", default=None,
+              help="Audio file to place at range marker positions")
+@click.option("--track", "track_index", default=None, type=int,
+              help="Track index for audio clip placement")
+@click.option("--format", "fmt", default="auto",
+              type=click.Choice(["auto", "json", "edl", "csv"]),
+              help="Sync file format (auto-detect from extension)")
+@handle_error
+def sync_import(sync_file, audio_file, track_index, fmt):
+    """Import sync markers from an Audacity sync file."""
+    session = get_session()
+    result = sync_mod.import_audio_sync(
+        session, sync_file,
+        audio_file=audio_file,
+        track_index=track_index,
+        format=fmt,
+    )
+    msg = f"Imported {result['markers_imported']} markers"
+    if result["clips_added"] > 0:
+        msg += f", placed {result['clips_added']} audio clips"
+    output(result, msg)
+
+
+@sync_group.command("list")
+@handle_error
+def sync_list():
+    """List all imported sync markers on the timeline."""
+    session = get_session()
+    markers = sync_mod.list_sync_markers(session)
+    if not markers:
+        output([], "No sync markers found.")
+    else:
+        output(markers, f"Sync markers ({len(markers)}):")
+
+
+# ============================================================================
+# Title commands
+# ============================================================================
+
+@cli.group("title")
+def title_group():
+    """Text/title animation commands."""
+    pass
+
+
+@title_group.command("add")
+@click.argument("text")
+@click.option("--track", "track_index", type=int, default=None)
+@click.option("--clip", "clip_index", type=int, default=None)
+@click.option("--font", default=None, help="Font family")
+@click.option("--size", type=int, default=None, help="Font size")
+@click.option("--color", default=None, help="Text color (hex)")
+@click.option("--halign", type=click.Choice(["left", "center", "right"]), default=None)
+@click.option("--valign", type=click.Choice(["top", "middle", "bottom"]), default=None)
+@click.option("--geometry", default=None, help="Position geometry x/y:wxh:opacity")
+@handle_error
+def title_add(text, track_index, clip_index, font, size, color, halign, valign, geometry):
+    """Add a text title to a clip."""
+    session = get_session()
+    result = title_mod.add_title(session, text, track_index=track_index,
+                                  clip_index=clip_index, font=font, size=size,
+                                  color=color, halign=halign, valign=valign,
+                                  geometry=geometry)
+    output(result, "Added title")
+
+
+@title_group.command("animate")
+@click.argument("preset")
+@click.option("--track", "track_index", type=int, default=None)
+@click.option("--clip", "clip_index", type=int, default=None)
+@click.option("--filter", "filter_index", type=int, default=0)
+@click.option("--start", "start_time", default="00:00:00.000", help="Start time")
+@click.option("--duration", type=float, default=None, help="Animation duration (seconds)")
+@handle_error
+def title_animate(preset, track_index, clip_index, filter_index, start_time, duration):
+    """Apply a preset animation to a title filter."""
+    session = get_session()
+    kwargs = {"start_time": start_time}
+    if duration is not None:
+        kwargs["duration"] = duration
+    result = title_mod.animate_title(session, track_index=track_index,
+                                      clip_index=clip_index,
+                                      filter_index=filter_index,
+                                      preset=preset, **kwargs)
+    output(result, f"Applied {preset} animation")
+
+
+@title_group.command("list-presets")
+@handle_error
+def title_list_presets():
+    """List available title animation presets."""
+    presets = title_mod.list_presets()
+    output(presets, "Title animation presets:")
+
+
+# ============================================================================
+# Mask commands
+# ============================================================================
+
+@cli.group("mask")
+def mask_group():
+    """Alpha masking and compositing commands."""
+    pass
+
+
+@mask_group.command("types")
+@handle_error
+def mask_types():
+    """List available mask types."""
+    types = mask_mod.list_mask_types()
+    output(types, "Mask types:")
+
+
+@mask_group.command("add")
+@click.argument("mask_type")
+@click.option("--track", "track_index", type=int, default=None)
+@click.option("--clip", "clip_index", type=int, default=None)
+@click.option("--param", "-p", multiple=True, help="Parameter: key=value")
+@click.option("--feather", type=float, default=0.0)
+@click.option("--invert", is_flag=True)
+@handle_error
+def mask_add(mask_type, track_index, clip_index, param, feather, invert):
+    """Add a mask to a clip or track."""
+    params = {}
+    for p in param:
+        if "=" not in p:
+            raise ValueError(f"Invalid param format: '{p}'. Use key=value.")
+        k, v = p.split("=", 1)
+        try:
+            v = float(v)
+        except ValueError:
+            pass
+        params[k] = v
+    session = get_session()
+    result = mask_mod.add_mask(session, mask_type, track_index=track_index,
+                                clip_index=clip_index, params=params if params else None,
+                                feather=feather, invert=invert)
+    output(result, f"Added {mask_type} mask")
+
+
+@mask_group.command("set")
+@click.argument("filter_index", type=int)
+@click.argument("param")
+@click.argument("value")
+@click.option("--track", "track_index", type=int, default=None)
+@click.option("--clip", "clip_index", type=int, default=None)
+@handle_error
+def mask_set(filter_index, param, value, track_index, clip_index):
+    """Set a mask parameter."""
+    session = get_session()
+    result = mask_mod.set_mask_param(session, filter_index, param, value,
+                                      track_index=track_index, clip_index=clip_index)
+    output(result, f"Set {param} = {value}")
+
+
+@mask_group.command("animate")
+@click.argument("filter_index", type=int)
+@click.argument("param")
+@click.option("--track", "track_index", type=int, default=None)
+@click.option("--clip", "clip_index", type=int, default=None)
+@click.option("--kf", multiple=True, help="Keyframe: time=value[:easing]")
+@handle_error
+def mask_animate(filter_index, param, track_index, clip_index, kf):
+    """Animate a mask parameter with keyframes."""
+    keyframes = []
+    for k in kf:
+        parts = k.split("=", 1)
+        if len(parts) != 2:
+            raise ValueError(f"Invalid keyframe: '{k}'. Use time=value[:easing].")
+        time_str = parts[0]
+        val_parts = parts[1].split(":", 1)
+        value = val_parts[0]
+        easing = val_parts[1] if len(val_parts) > 1 else "linear"
+        keyframes.append({"time": time_str, "value": value, "easing": easing})
+    session = get_session()
+    result = mask_mod.animate_mask(session, filter_index, param, keyframes,
+                                    track_index=track_index, clip_index=clip_index)
+    output(result, "Animated mask")
+
+
+@mask_group.command("track-matte")
+@click.argument("source_track", type=int)
+@click.argument("target_track", type=int)
+@handle_error
+def mask_track_matte(source_track, target_track):
+    """Add a track matte transition between two tracks."""
+    session = get_session()
+    result = mask_mod.add_track_matte(session, source_track, target_track)
+    output(result, "Added track matte")
+
+
+@mask_group.command("list")
+@click.option("--track", "track_index", type=int, default=None)
+@click.option("--clip", "clip_index", type=int, default=None)
+@handle_error
+def mask_list(track_index, clip_index):
+    """List masks on a target."""
+    session = get_session()
+    result = mask_mod.list_masks(session, track_index=track_index,
+                                  clip_index=clip_index)
+    output(result, "Masks:")
+
+
+@mask_group.command("remove")
+@click.argument("filter_index", type=int)
+@click.option("--track", "track_index", type=int, default=None)
+@click.option("--clip", "clip_index", type=int, default=None)
+@handle_error
+def mask_remove(filter_index, track_index, clip_index):
+    """Remove a mask filter."""
+    session = get_session()
+    result = mask_mod.remove_mask(session, filter_index, track_index=track_index,
+                                   clip_index=clip_index)
+    output(result, "Removed mask")
 
 
 # ============================================================================

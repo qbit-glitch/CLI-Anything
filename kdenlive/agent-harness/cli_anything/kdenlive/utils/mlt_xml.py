@@ -70,6 +70,31 @@ def _indent(text: str, level: int) -> str:
     return prefix + text
 
 
+def _param_to_mlt_value(value) -> str:
+    """Convert a parameter value to its MLT string representation.
+
+    If the value is a keyframed dict, generates an MLT keyframe string.
+    Otherwise, returns the string representation of the scalar value.
+    """
+    if isinstance(value, dict) and value.get("keyframed") is True:
+        keyframes = value.get("keyframes", [])
+        if not keyframes:
+            return ""
+        parts = []
+        for kf in keyframes:
+            time_str = kf["time"]
+            val_str = str(kf["value"])
+            easing = kf.get("easing", "linear")
+            if easing == "ease_in_out":
+                parts.append(f"{time_str}~={val_str}")
+            elif easing == "hold":
+                parts.append(f"{time_str}|={val_str}")
+            else:
+                parts.append(f"{time_str}={val_str}")
+        return ";".join(parts)
+    return str(value)
+
+
 def build_mlt_xml(project: Dict[str, Any]) -> str:
     """Build a complete MLT XML document from a project dictionary.
 
@@ -154,7 +179,8 @@ def build_mlt_xml(project: Dict[str, Any]) -> str:
                 lines.append(f'      <filter mlt_service="{mlt_svc}">')
                 lines.append(f'        <property name="kdenlive:filter_name">{xml_escape(filt.get("name", ""))}</property>')
                 for pk, pv in filt.get("params", {}).items():
-                    lines.append(f'        <property name="{xml_escape(pk)}">{xml_escape(str(pv))}</property>')
+                    pv_str = _param_to_mlt_value(pv)
+                    lines.append(f'        <property name="{xml_escape(pk)}">{xml_escape(pv_str)}</property>')
                 lines.append('      </filter>')
 
             lines.append('    </entry>')

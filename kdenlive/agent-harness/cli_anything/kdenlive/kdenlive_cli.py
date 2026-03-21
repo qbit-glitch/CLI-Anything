@@ -28,6 +28,7 @@ from cli_anything.kdenlive.core import project as proj_mod
 from cli_anything.kdenlive.core import bin as bin_mod
 from cli_anything.kdenlive.core import timeline as tl_mod
 from cli_anything.kdenlive.core import filters as filt_mod
+from cli_anything.kdenlive.core import keyframes as kf_mod
 from cli_anything.kdenlive.core import transitions as trans_mod
 from cli_anything.kdenlive.core import guides as guide_mod
 from cli_anything.kdenlive.core import export as export_mod
@@ -470,6 +471,77 @@ def filter_available(category):
     """List all available filters."""
     filters = filt_mod.list_available(category)
     output(filters, "Available filters:")
+
+
+# ── Keyframe Commands ──────────────────────────────────────────
+@cli.group("keyframe")
+def keyframe_group():
+    """Keyframe animation commands."""
+    pass
+
+
+@keyframe_group.command("add")
+@click.argument("track_id", type=int)
+@click.argument("clip_index", type=int)
+@click.argument("filter_index", type=int)
+@click.argument("time")
+@click.argument("param")
+@click.argument("value")
+@click.option("--easing", "-e", type=click.Choice(kf_mod.EASING_TYPES),
+              default="linear", help="Easing type")
+@handle_error
+def keyframe_add(track_id, clip_index, filter_index, time, param, value, easing):
+    """Add a keyframe to a filter parameter."""
+    sess = get_session()
+    sess.snapshot("Add keyframe")
+    result = kf_mod.add_keyframe(sess.get_project(), track_id, clip_index,
+                                  filter_index, time, param, value, easing)
+    output(result, f"Added keyframe at {time}")
+
+
+@keyframe_group.command("remove")
+@click.argument("track_id", type=int)
+@click.argument("clip_index", type=int)
+@click.argument("filter_index", type=int)
+@click.argument("time")
+@click.argument("param")
+@handle_error
+def keyframe_remove(track_id, clip_index, filter_index, time, param):
+    """Remove a keyframe at a specific time."""
+    sess = get_session()
+    sess.snapshot("Remove keyframe")
+    result = kf_mod.remove_keyframe(sess.get_project(), track_id, clip_index,
+                                     filter_index, time, param)
+    output(result, f"Removed keyframe at {time}")
+
+
+@keyframe_group.command("list")
+@click.argument("track_id", type=int)
+@click.argument("clip_index", type=int)
+@click.argument("filter_index", type=int)
+@click.argument("param")
+@handle_error
+def keyframe_list(track_id, clip_index, filter_index, param):
+    """List keyframes for a parameter."""
+    sess = get_session()
+    result = kf_mod.list_keyframes(sess.get_project(), track_id, clip_index,
+                                    filter_index, param)
+    output(result, f"Keyframes for {param}:")
+
+
+@keyframe_group.command("clear")
+@click.argument("track_id", type=int)
+@click.argument("clip_index", type=int)
+@click.argument("filter_index", type=int)
+@click.argument("param")
+@handle_error
+def keyframe_clear(track_id, clip_index, filter_index, param):
+    """Clear all keyframes from a parameter."""
+    sess = get_session()
+    sess.snapshot("Clear keyframes")
+    result = kf_mod.clear_keyframes(sess.get_project(), track_id, clip_index,
+                                     filter_index, param)
+    output(result, f"Cleared keyframes for {param}")
 
 
 # ── Transition Commands ─────────────────────────────────────────

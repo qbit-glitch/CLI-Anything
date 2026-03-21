@@ -34,6 +34,7 @@ from cli_anything.audacity.core import labels as label_mod
 from cli_anything.audacity.core import selection as sel_mod
 from cli_anything.audacity.core import media as media_mod
 from cli_anything.audacity.core import export as export_mod
+from cli_anything.audacity.core import sync as sync_mod
 
 # Global session state
 _session: Optional[Session] = None
@@ -631,6 +632,37 @@ def export_render(output_path, preset, overwrite, channels):
     output(result, f"Rendered to: {output_path}")
 
 
+# -- Sync Commands ---------------------------------------------------------
+@cli.group("sync")
+def sync_group():
+    """Audio sync export commands for cross-app marker bridging."""
+    pass
+
+
+@sync_group.command("export")
+@click.argument("output_path")
+@click.option("--format", "-f", "fmt", type=click.Choice(["json", "edl", "csv"]),
+              default="json", help="Output format")
+@handle_error
+def sync_export(output_path, fmt):
+    """Export labels/markers as sync data for video editors."""
+    sess = get_session()
+    result = sync_mod.export_sync_data(sess.get_project(), output_path, format=fmt)
+    output(result, f"Exported {result['marker_count']} markers to: {result['path']}")
+
+
+@sync_group.command("preview")
+@handle_error
+def sync_preview():
+    """Preview sync markers without exporting."""
+    sess = get_session()
+    markers = sync_mod.labels_to_json_markers(sess.get_project())
+    if not markers:
+        output({"markers": [], "count": 0}, "No labels found to export.")
+    else:
+        output(markers, f"Sync preview ({len(markers)} markers):")
+
+
 # -- Session Commands ------------------------------------------------------
 @cli.group("session")
 def session_group():
@@ -786,6 +818,7 @@ def _repl_help(skin=None):
         "label add|remove|list": "Label/marker management",
         "media probe|check": "Media file operations",
         "export presets|preset-info|render": "Export/render commands",
+        "sync export|preview": "Audio sync export for video editors",
         "session status|undo|redo|history": "Session management",
         "eval": "Run evaluation harness and generate reports",
         "help": "Show this help",

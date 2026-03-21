@@ -32,6 +32,7 @@ from cli_anything.gimp.core import filters as filt_mod
 from cli_anything.gimp.core import canvas as canvas_mod
 from cli_anything.gimp.core import media as media_mod
 from cli_anything.gimp.core import export as export_mod
+from cli_anything.gimp.core import animation as anim_mod
 
 # Global session state
 _session: Optional[Session] = None
@@ -714,6 +715,114 @@ def draw_rect(layer_index, x1, y1, x2, y2, fill, outline, line_width):
            f"Drew rectangle on layer {layer_index}")
 
 
+# ── Animation Commands ────────────────────────────────────────────
+@cli.group()
+def animation():
+    """Animation / frame sequence commands."""
+    pass
+
+
+@animation.command("settings")
+@click.option("--frames", "frame_count", type=int, default=None, help="Total frame count")
+@click.option("--fps", type=int, default=None, help="Frames per second")
+@handle_error
+def animation_settings(frame_count, fps):
+    """View or update animation settings."""
+    sess = get_session()
+    proj = sess.get_project()
+    if frame_count is not None or fps is not None:
+        sess.snapshot("Update animation settings")
+        kwargs = {}
+        if frame_count is not None:
+            kwargs["frame_count"] = frame_count
+        if fps is not None:
+            kwargs["fps"] = fps
+        # Merge with existing settings
+        current = anim_mod.get_animation_settings(proj)
+        if "frame_count" not in kwargs:
+            kwargs["frame_count"] = current["frame_count"]
+        if "fps" not in kwargs:
+            kwargs["fps"] = current["fps"]
+        result = anim_mod.set_animation_settings(proj, **kwargs)
+        output(result, "Animation settings updated")
+    else:
+        result = anim_mod.get_animation_settings(proj)
+        output(result, "Animation settings:")
+
+
+@animation.command("keyframe")
+@click.argument("frame", type=int)
+@click.argument("layer", type=int)
+@click.argument("param", type=str)
+@click.argument("value", type=float)
+@click.option("--filter", "filter_index", type=int, default=-1,
+              help="Filter index (-1 for layer property)")
+@click.option("--interpolation", "-i",
+              type=click.Choice(anim_mod.INTERPOLATION_TYPES, case_sensitive=False),
+              default="LINEAR", help="Interpolation type")
+@handle_error
+def animation_keyframe(frame, layer, param, value, filter_index, interpolation):
+    """Add or update a keyframe."""
+    sess = get_session()
+    sess.snapshot(f"Add keyframe: frame={frame} layer={layer} {param}={value}")
+    proj = sess.get_project()
+    kf = anim_mod.add_animation_keyframe(
+        proj, frame=frame, layer_index=layer, param=param,
+        value=value, filter_index=filter_index,
+        interpolation=interpolation.upper(),
+    )
+    output(kf, f"Keyframe set: frame {frame}, layer {layer}, {param}={value}")
+
+
+@animation.command("remove-keyframe")
+@click.argument("frame", type=int)
+@click.argument("layer", type=int)
+@click.argument("param", type=str)
+@click.option("--filter", "filter_index", type=int, default=-1,
+              help="Filter index (-1 for layer property)")
+@handle_error
+def animation_remove_keyframe(frame, layer, param, filter_index):
+    """Remove a keyframe."""
+    sess = get_session()
+    sess.snapshot(f"Remove keyframe: frame={frame} layer={layer} {param}")
+    proj = sess.get_project()
+    result = anim_mod.remove_animation_keyframe(
+        proj, frame=frame, layer_index=layer, param=param,
+        filter_index=filter_index,
+    )
+    output(result, f"Removed keyframe at frame {frame}")
+
+
+@animation.command("list-keyframes")
+@click.option("--layer", "layer_index", type=int, default=None, help="Filter by layer index")
+@click.option("--param", type=str, default=None, help="Filter by parameter name")
+@handle_error
+def animation_list_keyframes(layer_index, param):
+    """List keyframes, optionally filtered."""
+    sess = get_session()
+    proj = sess.get_project()
+    kfs = anim_mod.list_animation_keyframes(proj, layer_index=layer_index, param=param)
+    output(kfs, f"Keyframes ({len(kfs)} total):")
+
+
+@animation.command("sequence")
+@click.argument("output_dir", type=str)
+@click.option("--start", "frame_start", type=int, default=0, help="Start frame (inclusive)")
+@click.option("--end", "frame_end", type=int, default=None, help="End frame (exclusive)")
+@click.option("--preset", "-p", default="png", help="Export preset")
+@handle_error
+def animation_sequence(output_dir, frame_start, frame_end, preset):
+    """Generate a frame sequence to a directory."""
+    sess = get_session()
+    proj = sess.get_project()
+    result = anim_mod.generate_frame_sequence(
+        proj, output_dir,
+        frame_start=frame_start, frame_end=frame_end,
+        preset=preset,
+    )
+    output(result, f"Generated {result['frame_count']} frames in {output_dir}")
+
+
 # ── REPL ─────────────────────────────────────────────────────────
 @cli.command()
 @click.option("--project", "project_path", type=str, default=None)
@@ -737,16 +846,17 @@ def repl(project_path):
     pt_session = skin.create_prompt_session()
 
     _repl_commands = {
-        "project":  "new|open|save|info|profiles|json",
-        "layer":    "new|add-from-file|list|remove|duplicate|move|set|flatten|merge-down",
-        "canvas":   "info|resize|scale|crop|mode|dpi",
-        "filter":   "list-available|info|add|remove|set|list",
-        "media":    "probe|list|check|histogram",
-        "export":   "presets|preset-info|render",
-        "draw":     "text|rect",
-        "session":  "status|undo|redo|history",
-        "help":     "Show this help",
-        "quit":     "Exit REPL",
+        "project":    "new|open|save|info|profiles|json",
+        "layer":      "new|add-from-file|list|remove|duplicate|move|set|flatten|merge-down",
+        "canvas":     "info|resize|scale|crop|mode|dpi",
+        "filter":     "list-available|info|add|remove|set|list",
+        "media":      "probe|list|check|histogram",
+        "export":     "presets|preset-info|render",
+        "draw":       "text|rect",
+        "animation":  "settings|keyframe|remove-keyframe|list-keyframes|sequence",
+        "session":    "status|undo|redo|history",
+        "help":       "Show this help",
+        "quit":       "Exit REPL",
     }
 
     while True:
