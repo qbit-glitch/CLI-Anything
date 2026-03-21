@@ -32,6 +32,9 @@ from cli_anything.blender.core import lighting as light_mod
 from cli_anything.blender.core import animation as anim_mod
 from cli_anything.blender.core import render as render_mod
 from cli_anything.blender.core import camera as camera_mod
+from cli_anything.blender.core import shape_layers as shape_mod
+from cli_anything.blender.core import particles_bpy as particles_mod
+from cli_anything.blender.core import compositor as compositor_mod
 
 # Global session state
 _session: Optional[Session] = None
@@ -774,6 +777,433 @@ def camera_shake(camera_name, intensity, frequency, decay, duration, fps):
            f"Shake: {len(lines)} script lines generated")
 
 
+# ── Shape Commands ──────────────────────────────────────────────
+@cli.group("shape")
+def shape_group():
+    """Shape layer creation and path animation commands."""
+    pass
+
+
+@shape_group.command("rectangle")
+@click.option("--width", "-w", type=float, required=True, help="Width")
+@click.option("--height", "-h", type=float, required=True, help="Height")
+@click.option("--corner-radius", "-cr", type=float, default=0.0, help="Corner radius")
+@click.option("--fill", "-f", default=None, help="Fill color R,G,B,A")
+@click.option("--stroke", "-s", default=None, help="Stroke color R,G,B,A")
+@click.option("--name", "-n", default="Rectangle", help="Object name")
+@handle_error
+def shape_rectangle(width, height, corner_radius, fill, stroke, name):
+    """Create a rectangle shape."""
+    fill_col = [float(x) for x in fill.split(",")] if fill else None
+    stroke_col = [float(x) for x in stroke.split(",")] if stroke else None
+    sess = get_session()
+    sess.snapshot(f"Create rectangle: {name}")
+    lines = shape_mod.create_rectangle(
+        sess, width, height, corner_radius=corner_radius,
+        fill_color=fill_col, stroke_color=stroke_col, name=name,
+    )
+    output({"name": name, "script_lines": len(lines)}, f"Rectangle '{name}': {len(lines)} script lines")
+
+
+@shape_group.command("ellipse")
+@click.option("--rx", type=float, required=True, help="Horizontal radius")
+@click.option("--ry", type=float, required=True, help="Vertical radius")
+@click.option("--fill", "-f", default=None, help="Fill color R,G,B,A")
+@click.option("--name", "-n", default="Ellipse", help="Object name")
+@handle_error
+def shape_ellipse(rx, ry, fill, name):
+    """Create an ellipse shape."""
+    fill_col = [float(x) for x in fill.split(",")] if fill else None
+    sess = get_session()
+    sess.snapshot(f"Create ellipse: {name}")
+    lines = shape_mod.create_ellipse(sess, rx, ry, fill_color=fill_col, name=name)
+    output({"name": name, "script_lines": len(lines)}, f"Ellipse '{name}': {len(lines)} script lines")
+
+
+@shape_group.command("polygon")
+@click.option("--sides", type=int, required=True, help="Number of sides")
+@click.option("--radius", "-r", type=float, required=True, help="Circumscribed radius")
+@click.option("--fill", "-f", default=None, help="Fill color R,G,B,A")
+@click.option("--name", "-n", default="Polygon", help="Object name")
+@handle_error
+def shape_polygon(sides, radius, fill, name):
+    """Create a regular polygon shape."""
+    fill_col = [float(x) for x in fill.split(",")] if fill else None
+    sess = get_session()
+    sess.snapshot(f"Create polygon: {name}")
+    lines = shape_mod.create_polygon(sess, sides, radius, fill_color=fill_col, name=name)
+    output({"name": name, "script_lines": len(lines)}, f"Polygon '{name}': {len(lines)} script lines")
+
+
+@shape_group.command("star")
+@click.option("--points", "-p", type=int, required=True, help="Number of star points")
+@click.option("--inner-radius", type=float, required=True, help="Inner radius")
+@click.option("--outer-radius", type=float, required=True, help="Outer radius")
+@click.option("--fill", "-f", default=None, help="Fill color R,G,B,A")
+@click.option("--name", "-n", default="Star", help="Object name")
+@handle_error
+def shape_star(points, inner_radius, outer_radius, fill, name):
+    """Create a star shape."""
+    fill_col = [float(x) for x in fill.split(",")] if fill else None
+    sess = get_session()
+    sess.snapshot(f"Create star: {name}")
+    lines = shape_mod.create_star(
+        sess, points, inner_radius, outer_radius, fill_color=fill_col, name=name,
+    )
+    output({"name": name, "script_lines": len(lines)}, f"Star '{name}': {len(lines)} script lines")
+
+
+@shape_group.command("morph")
+@click.argument("shape_a")
+@click.argument("shape_b")
+@click.option("--duration", "-d", type=float, required=True, help="Duration in seconds")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--easing", default="ease_in_out_cubic", help="Easing function name")
+@handle_error
+def shape_morph(shape_a, shape_b, duration, fps, easing):
+    """Animate shape-key morph between two objects."""
+    sess = get_session()
+    sess.snapshot(f"Morph: {shape_a} → {shape_b}")
+    lines = shape_mod.morph(sess, shape_a, shape_b, duration, fps, easing)
+    output({"shape_a": shape_a, "shape_b": shape_b,
+            "keyframes": len([l for l in lines if "keyframe_insert" in l])},
+           f"Morph: {len(lines)} script lines generated")
+
+
+@shape_group.command("trim-path")
+@click.argument("shape_name")
+@click.option("--start-pct", type=float, default=0.0, help="Start percentage (0-1)")
+@click.option("--end-pct", type=float, default=1.0, help="End percentage (0-1)")
+@click.option("--duration", "-d", type=float, required=True, help="Duration in seconds")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--easing", default="ease_in_out_cubic", help="Easing function name")
+@handle_error
+def shape_trim_path(shape_name, start_pct, end_pct, duration, fps, easing):
+    """Animate curve trim path (draw-on effect)."""
+    sess = get_session()
+    sess.snapshot(f"Trim path: {shape_name}")
+    lines = shape_mod.trim_path(sess, shape_name, start_pct, end_pct, duration, fps, easing)
+    output({"shape": shape_name, "keyframes": len([l for l in lines if "keyframe_insert" in l])},
+           f"Trim path: {len(lines)} script lines generated")
+
+
+@shape_group.command("offset-path")
+@click.argument("shape_name")
+@click.option("--amount", "-a", type=float, required=True, help="Solidify thickness target")
+@click.option("--duration", "-d", type=float, required=True, help="Duration in seconds")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--easing", default="ease_out_cubic", help="Easing function name")
+@handle_error
+def shape_offset_path(shape_name, amount, duration, fps, easing):
+    """Animate solidify modifier thickness (offset path)."""
+    sess = get_session()
+    sess.snapshot(f"Offset path: {shape_name}")
+    lines = shape_mod.offset_path(sess, shape_name, amount, duration, fps, easing)
+    output({"shape": shape_name, "keyframes": len([l for l in lines if "keyframe_insert" in l])},
+           f"Offset path: {len(lines)} script lines generated")
+
+
+@shape_group.command("repeater")
+@click.argument("shape_name")
+@click.option("--copies", "-c", type=int, required=True, help="Number of copies")
+@click.option("--offset", "-o", default=None, help="Offset x,y,z per copy")
+@click.option("--scale-step", type=float, default=1.0, help="Scale multiplier per copy")
+@click.option("--rotation-step", type=float, default=0.0, help="Z rotation step (degrees)")
+@handle_error
+def shape_repeater(shape_name, copies, offset, scale_step, rotation_step):
+    """Create copies via Array modifier."""
+    off = [float(x) for x in offset.split(",")] if offset else None
+    sess = get_session()
+    sess.snapshot(f"Repeater: {shape_name} x{copies}")
+    lines = shape_mod.repeater(sess, shape_name, copies, offset=off,
+                                scale_step=scale_step, rotation_step=rotation_step)
+    output({"shape": shape_name, "copies": copies, "script_lines": len(lines)},
+           f"Repeater: {len(lines)} script lines generated")
+
+
+# ── Particles Commands ──────────────────────────────────────────
+@cli.group("particles")
+def particles_group():
+    """Particle system integration commands."""
+    pass
+
+
+@particles_group.command("emit-object")
+@click.argument("object_name")
+@click.option("--count", type=int, default=None, help="Particle count")
+@click.option("--lifetime", type=int, default=None, help="Particle lifetime (frames)")
+@click.option("--emit-from", type=click.Choice(["FACE", "VOLUME", "VERT"]), default=None)
+@handle_error
+def particles_emit_object(object_name, count, lifetime, emit_from):
+    """Add a particle system to an existing object."""
+    cfg = {}
+    if count is not None:
+        cfg["count"] = count
+    if lifetime is not None:
+        cfg["lifetime"] = lifetime
+    if emit_from is not None:
+        cfg["emit_from"] = emit_from
+    sess = get_session()
+    sess.snapshot(f"Particle system on: {object_name}")
+    lines = particles_mod.emit_from_object(sess, object_name, cfg or None)
+    output({"object": object_name, "script_lines": len(lines)},
+           f"Particles on '{object_name}': {len(lines)} script lines")
+
+
+@particles_group.command("emit-point")
+@click.option("--position", "-p", required=True, help="Position x,y,z")
+@click.option("--count", type=int, default=None, help="Particle count")
+@click.option("--lifetime", type=int, default=None, help="Particle lifetime (frames)")
+@handle_error
+def particles_emit_point(position, count, lifetime):
+    """Create an emitter at a world position."""
+    pos = [float(x) for x in position.split(",")]
+    cfg = {}
+    if count is not None:
+        cfg["count"] = count
+    if lifetime is not None:
+        cfg["lifetime"] = lifetime
+    sess = get_session()
+    sess.snapshot(f"Point emitter at {pos}")
+    lines = particles_mod.emit_from_point(sess, pos, cfg or None)
+    output({"position": pos, "script_lines": len(lines)},
+           f"Point emitter: {len(lines)} script lines")
+
+
+@particles_group.command("emit-text")
+@click.argument("text_object")
+@click.option("--count", type=int, default=None, help="Particle count")
+@handle_error
+def particles_emit_text(text_object, count):
+    """Convert a text object to mesh and add particles."""
+    cfg = {}
+    if count is not None:
+        cfg["count"] = count
+    sess = get_session()
+    sess.snapshot(f"Text particle emitter: {text_object}")
+    lines = particles_mod.emit_from_text(sess, text_object, cfg or None)
+    output({"text_object": text_object, "script_lines": len(lines)},
+           f"Text emitter '{text_object}': {len(lines)} script lines")
+
+
+@particles_group.command("force-field")
+@click.option("--type", "force_type",
+              type=click.Choice(["TURBULENCE", "WIND", "VORTEX", "FORCE"]),
+              required=True, help="Force field type")
+@click.option("--strength", "-s", type=float, required=True, help="Force strength")
+@click.option("--position", "-p", default=None, help="Position x,y,z")
+@click.option("--name", "-n", default="ForceField", help="Object name")
+@handle_error
+def particles_force_field(force_type, strength, position, name):
+    """Add a force field effector."""
+    pos = [float(x) for x in position.split(",")] if position else None
+    sess = get_session()
+    sess.snapshot(f"Force field: {force_type}")
+    lines = particles_mod.add_force_field(sess, force_type, strength, position=pos, name=name)
+    output({"type": force_type, "strength": strength, "script_lines": len(lines)},
+           f"Force field '{force_type}': {len(lines)} script lines")
+
+
+@particles_group.command("preset-confetti")
+@click.argument("object_name")
+@handle_error
+def particles_preset_confetti(object_name):
+    """Apply confetti burst preset."""
+    sess = get_session()
+    sess.snapshot(f"Confetti on: {object_name}")
+    lines = particles_mod.preset_confetti(sess, object_name)
+    output({"object": object_name, "script_lines": len(lines)},
+           f"Confetti preset: {len(lines)} script lines")
+
+
+@particles_group.command("preset-sparks")
+@click.argument("object_name")
+@click.option("--color", "-c", default=None, help="Spark color R,G,B,A")
+@handle_error
+def particles_preset_sparks(object_name, color):
+    """Apply sparks preset."""
+    col = [float(x) for x in color.split(",")] if color else None
+    sess = get_session()
+    sess.snapshot(f"Sparks on: {object_name}")
+    lines = particles_mod.preset_sparks(sess, object_name, color=col)
+    output({"object": object_name, "script_lines": len(lines)},
+           f"Sparks preset: {len(lines)} script lines")
+
+
+@particles_group.command("preset-disintegrate")
+@click.argument("object_name")
+@click.option("--duration", "-d", type=float, default=2.0, help="Effect duration (seconds)")
+@handle_error
+def particles_preset_disintegrate(object_name, duration):
+    """Apply disintegrate preset (Explode modifier)."""
+    sess = get_session()
+    sess.snapshot(f"Disintegrate: {object_name}")
+    lines = particles_mod.preset_disintegrate(sess, object_name, duration=duration)
+    output({"object": object_name, "script_lines": len(lines)},
+           f"Disintegrate preset: {len(lines)} script lines")
+
+
+@particles_group.command("preset-data-stream")
+@click.option("--direction", "-d", default=None, help="Direction x,y,z")
+@click.option("--speed", "-s", type=float, default=5.0, help="Particle speed")
+@handle_error
+def particles_preset_data_stream(direction, speed):
+    """Apply data-stream flowing particles preset."""
+    dir_vec = [float(x) for x in direction.split(",")] if direction else None
+    sess = get_session()
+    sess.snapshot("Data stream particles")
+    lines = particles_mod.preset_data_stream(sess, direction=dir_vec, speed=speed)
+    output({"script_lines": len(lines)}, f"Data stream preset: {len(lines)} script lines")
+
+
+# ── Compositor Commands ─────────────────────────────────────────
+@cli.group("compositor")
+def compositor_group():
+    """Node compositor post-processing commands."""
+    pass
+
+
+@compositor_group.command("glow")
+@click.option("--threshold", type=float, default=0.5, help="Brightness threshold")
+@click.option("--intensity", type=float, default=1.0, help="Glow intensity")
+@click.option("--size", type=int, default=9, help="Glow size")
+@click.option("--quality", type=click.Choice(["LOW", "MEDIUM", "HIGH"]), default="MEDIUM")
+@handle_error
+def compositor_glow(threshold, intensity, size, quality):
+    """Add FOG_GLOW glare effect."""
+    sess = get_session()
+    lines = compositor_mod.glow(sess, threshold=threshold, intensity=intensity,
+                                 size=size, quality=quality)
+    output({"effect": "glow", "script_lines": len(lines)},
+           f"Glow: {len(lines)} script lines")
+
+
+@compositor_group.command("color-grade")
+@click.option("--lift", default=None, help="Lift R,G,B")
+@click.option("--gamma", default=None, help="Gamma R,G,B")
+@click.option("--gain", default=None, help="Gain R,G,B")
+@click.option("--saturation", type=float, default=1.0, help="Saturation multiplier")
+@handle_error
+def compositor_color_grade(lift, gamma, gain, saturation):
+    """Add color grading (Color Balance + Hue Saturation)."""
+    lift_v  = [float(x) for x in lift.split(",")]  if lift  else None
+    gamma_v = [float(x) for x in gamma.split(",")] if gamma else None
+    gain_v  = [float(x) for x in gain.split(",")]  if gain  else None
+    sess = get_session()
+    lines = compositor_mod.color_grade(sess, lift=lift_v, gamma=gamma_v,
+                                        gain=gain_v, saturation=saturation)
+    output({"effect": "color_grade", "script_lines": len(lines)},
+           f"Color grade: {len(lines)} script lines")
+
+
+@compositor_group.command("chromatic-aberration")
+@click.option("--dispersion", type=float, default=0.01, help="Dispersion amount")
+@handle_error
+def compositor_chromatic_aberration(dispersion):
+    """Add chromatic aberration effect."""
+    sess = get_session()
+    lines = compositor_mod.chromatic_aberration(sess, dispersion=dispersion)
+    output({"effect": "chromatic_aberration", "script_lines": len(lines)},
+           f"Chromatic aberration: {len(lines)} script lines")
+
+
+@compositor_group.command("lens-distortion")
+@click.option("--distortion", type=float, default=0.1, help="Distortion amount")
+@click.option("--dispersion", type=float, default=0.0, help="Chromatic dispersion")
+@handle_error
+def compositor_lens_distortion(distortion, dispersion):
+    """Add lens distortion effect."""
+    sess = get_session()
+    lines = compositor_mod.lens_distortion(sess, distortion=distortion, dispersion=dispersion)
+    output({"effect": "lens_distortion", "script_lines": len(lines)},
+           f"Lens distortion: {len(lines)} script lines")
+
+
+@compositor_group.command("vignette")
+@click.option("--intensity", type=float, default=0.5, help="Vignette darkness")
+@click.option("--softness", type=float, default=0.3, help="Edge softness")
+@handle_error
+def compositor_vignette(intensity, softness):
+    """Add vignette effect."""
+    sess = get_session()
+    lines = compositor_mod.vignette(sess, intensity=intensity, softness=softness)
+    output({"effect": "vignette", "script_lines": len(lines)},
+           f"Vignette: {len(lines)} script lines")
+
+
+@compositor_group.command("film-grain")
+@click.option("--intensity", type=float, default=0.1, help="Grain intensity")
+@click.option("--size", type=float, default=1.0, help="Grain size")
+@handle_error
+def compositor_film_grain(intensity, size):
+    """Add film grain effect."""
+    sess = get_session()
+    lines = compositor_mod.film_grain(sess, intensity=intensity, size=size)
+    output({"effect": "film_grain", "script_lines": len(lines)},
+           f"Film grain: {len(lines)} script lines")
+
+
+@compositor_group.command("motion-blur")
+@click.option("--samples", type=int, default=32, help="Blur samples")
+@click.option("--speed-factor", type=float, default=1.0, help="Speed scale factor")
+@handle_error
+def compositor_motion_blur(samples, speed_factor):
+    """Add motion blur (Vector Blur node)."""
+    sess = get_session()
+    lines = compositor_mod.motion_blur(sess, samples=samples, speed_factor=speed_factor)
+    output({"effect": "motion_blur", "script_lines": len(lines)},
+           f"Motion blur: {len(lines)} script lines")
+
+
+@compositor_group.command("depth-of-field")
+@click.option("--f-stop", type=float, default=2.8, help="Aperture f-stop")
+@click.option("--max-blur", type=float, default=16.0, help="Maximum blur radius (px)")
+@handle_error
+def compositor_depth_of_field(f_stop, max_blur):
+    """Add depth-of-field blur (Defocus node)."""
+    sess = get_session()
+    lines = compositor_mod.depth_of_field(sess, f_stop=f_stop, max_blur=max_blur)
+    output({"effect": "depth_of_field", "script_lines": len(lines)},
+           f"Depth of field: {len(lines)} script lines")
+
+
+@compositor_group.command("bloom")
+@click.option("--threshold", type=float, default=0.8, help="Bloom threshold")
+@click.option("--radius", type=int, default=9, help="Bloom radius")
+@click.option("--intensity", type=float, default=1.0, help="Bloom intensity")
+@handle_error
+def compositor_bloom(threshold, radius, intensity):
+    """Add bloom effect (Glare GHOSTS node)."""
+    sess = get_session()
+    lines = compositor_mod.bloom(sess, threshold=threshold, radius=radius, intensity=intensity)
+    output({"effect": "bloom", "script_lines": len(lines)},
+           f"Bloom: {len(lines)} script lines")
+
+
+@compositor_group.command("sharpen")
+@click.option("--factor", type=float, default=0.5, help="Sharpen strength")
+@handle_error
+def compositor_sharpen(factor):
+    """Add sharpening (Filter SHARPEN node)."""
+    sess = get_session()
+    lines = compositor_mod.sharpen(sess, factor=factor)
+    output({"effect": "sharpen", "script_lines": len(lines)},
+           f"Sharpen: {len(lines)} script lines")
+
+
+@compositor_group.command("apply-chain")
+@click.option("--effect", "-e", multiple=True, required=True,
+              help="Effect type: glow,bloom,vignette,sharpen,film_grain,motion_blur,etc.")
+@handle_error
+def compositor_apply_chain(effect):
+    """Chain multiple compositor effects in sequence."""
+    effects_list = [{"type": e.strip()} for e in effect]
+    sess = get_session()
+    lines = compositor_mod.apply_chain(sess, effects_list)
+    output({"effects": [e["type"] for e in effects_list], "script_lines": len(lines)},
+           f"Effect chain ({len(effects_list)} effects): {len(lines)} script lines")
+
+
 # ── Light Commands ──────────────────────────────────────────────
 @cli.group()
 def light():
@@ -1056,17 +1486,20 @@ def repl(project_path):
     pt_session = skin.create_prompt_session()
 
     _repl_commands = {
-        "scene":     "new|open|save|info|profiles|json",
-        "object":    "add|add-text|remove|duplicate|transform|set|list|get",
-        "material":  "create|assign|set|list|get",
-        "modifier":  "list-available|info|add|remove|set|list",
-        "camera":    "add|set|set-active|list|create|dolly|orbit|pan|zoom|rack-focus|crane|follow-path|shake",
-        "light":     "add|set|list",
-        "animation": "keyframe|remove-keyframe|frame-range|fps|list-keyframes",
-        "render":    "settings|info|presets|execute|script",
-        "session":   "status|undo|redo|history",
-        "help":      "show this help",
-        "quit":      "exit REPL",
+        "scene":       "new|open|save|info|profiles|json",
+        "object":      "add|add-text|remove|duplicate|transform|set|list|get",
+        "material":    "create|assign|set|list|get",
+        "modifier":    "list-available|info|add|remove|set|list",
+        "camera":      "add|set|set-active|list|create|dolly|orbit|pan|zoom|rack-focus|crane|follow-path|shake",
+        "shape":       "rectangle|ellipse|polygon|star|morph|trim-path|offset-path|repeater",
+        "particles":   "emit-object|emit-point|emit-text|force-field|preset-confetti|preset-sparks|preset-disintegrate|preset-data-stream",
+        "compositor":  "glow|color-grade|chromatic-aberration|lens-distortion|vignette|film-grain|motion-blur|depth-of-field|bloom|sharpen|apply-chain",
+        "light":       "add|set|list",
+        "animation":   "keyframe|remove-keyframe|frame-range|fps|list-keyframes",
+        "render":      "settings|info|presets|execute|script",
+        "session":     "status|undo|redo|history",
+        "help":        "show this help",
+        "quit":        "exit REPL",
     }
 
     while True:
