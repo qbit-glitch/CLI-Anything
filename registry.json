@@ -17,7 +17,80 @@
       "skill_md": "anygen/agent-harness/cli_anything/anygen/skills/SKILL.md",
       "category": "generation",
       "contributor": "koltyu-anygen",
-      "contributor_url": "https://github.com/koltyu-anygen"
+      "contributor_url": "https://github.com/koltyu-anygen",
+      "mcp_tool_prefix": "anygen",
+      "commands": [
+        {
+          "name": "task_status",
+          "group": "task",
+          "description": "Query task status (non-blocking)."
+        },
+        {
+          "name": "task_download",
+          "group": "task",
+          "description": "Download the generated file for a completed task."
+        },
+        {
+          "name": "task_thumbnail",
+          "group": "task",
+          "description": "Download thumbnail image for a completed task."
+        },
+        {
+          "name": "task_list",
+          "group": "task",
+          "description": "List locally cached task records."
+        },
+        {
+          "name": "task_prepare",
+          "group": "task",
+          "description": "Multi-turn requirement analysis before creating a task."
+        },
+        {
+          "name": "file_upload",
+          "group": "file",
+          "description": "Upload a reference file to get a file_token."
+        },
+        {
+          "name": "config_set",
+          "group": "config",
+          "description": "Set a configuration value."
+        },
+        {
+          "name": "config_get",
+          "group": "config",
+          "description": "Get a configuration value (or show all)."
+        },
+        {
+          "name": "config_delete",
+          "group": "config",
+          "description": "Delete a configuration value."
+        },
+        {
+          "name": "config_path",
+          "group": "config",
+          "description": "Show the config file path."
+        },
+        {
+          "name": "session_status",
+          "group": "session",
+          "description": "Show session status."
+        },
+        {
+          "name": "session_history",
+          "group": "session",
+          "description": "Show command history."
+        },
+        {
+          "name": "session_undo",
+          "group": "session",
+          "description": "Undo last command."
+        },
+        {
+          "name": "session_redo",
+          "group": "session",
+          "description": "Redo last undone command."
+        }
+      ]
     },
     {
       "name": "adguardhome",
@@ -733,7 +806,155 @@
       "skill_md": "drawio/agent-harness/cli_anything/drawio/skills/SKILL.md",
       "category": "diagrams",
       "contributor": "zhangxilong-43",
-      "contributor_url": "https://github.com/zhangxilong-43"
+      "contributor_url": "https://github.com/zhangxilong-43",
+      "mcp_tool_prefix": "drawio",
+      "commands": [
+        {
+          "name": "project_open",
+          "group": "project",
+          "description": "Open an existing .drawio project file."
+        },
+        {
+          "name": "project_save",
+          "group": "project",
+          "description": "Save the current project."
+        },
+        {
+          "name": "project_info",
+          "group": "project",
+          "description": "Show detailed project information."
+        },
+        {
+          "name": "project_xml",
+          "group": "project",
+          "description": "Print the raw XML of the current project."
+        },
+        {
+          "name": "project_presets",
+          "group": "project",
+          "description": "List available page size presets."
+        },
+        {
+          "name": "shape_add",
+          "group": "shape",
+          "description": "Add a shape to the diagram. SHAPE_TYPE: rectangle, rounded, ellipse, diamond, triangle, hexagon, cylinder, cloud, parallelogram, process, document, callout, note, actor, text"
+        },
+        {
+          "name": "shape_remove",
+          "group": "shape",
+          "description": "Remove a shape by ID."
+        },
+        {
+          "name": "shape_list",
+          "group": "shape",
+          "description": "List all shapes on a page."
+        },
+        {
+          "name": "shape_label",
+          "group": "shape",
+          "description": "Update a shape's label text."
+        },
+        {
+          "name": "shape_move",
+          "group": "shape",
+          "description": "Move a shape to new coordinates."
+        },
+        {
+          "name": "shape_resize",
+          "group": "shape",
+          "description": "Resize a shape."
+        },
+        {
+          "name": "shape_style",
+          "group": "shape",
+          "description": "Set a style property on a shape. Common keys: fillColor, strokeColor, fontColor, fontSize, opacity, rounded, shadow, dashed, strokeWidth"
+        },
+        {
+          "name": "shape_info",
+          "group": "shape",
+          "description": "Show detailed info about a shape."
+        },
+        {
+          "name": "shape_types",
+          "group": "shape",
+          "description": "List all available shape types."
+        },
+        {
+          "name": "connect_remove",
+          "group": "connect",
+          "description": "Remove a connector by ID."
+        },
+        {
+          "name": "connect_label",
+          "group": "connect",
+          "description": "Update a connector's label."
+        },
+        {
+          "name": "connect_style",
+          "group": "connect",
+          "description": "Set a style property on a connector."
+        },
+        {
+          "name": "connect_list",
+          "group": "connect",
+          "description": "List all connectors on a page."
+        },
+        {
+          "name": "connect_styles",
+          "group": "connect",
+          "description": "List available edge styles."
+        },
+        {
+          "name": "page_add",
+          "group": "page",
+          "description": "Add a new page."
+        },
+        {
+          "name": "page_remove",
+          "group": "page",
+          "description": "Remove a page by index."
+        },
+        {
+          "name": "page_rename",
+          "group": "page",
+          "description": "Rename a page."
+        },
+        {
+          "name": "page_list",
+          "group": "page",
+          "description": "List all pages."
+        },
+        {
+          "name": "export_formats",
+          "group": "export",
+          "description": "List available export formats."
+        },
+        {
+          "name": "session_status",
+          "group": "session",
+          "description": "Show current session status."
+        },
+        {
+          "name": "session_undo",
+          "group": "session",
+          "description": "Undo the last operation."
+        },
+        {
+          "name": "session_redo",
+          "group": "session",
+          "description": "Redo the last undone operation."
+        },
+        {
+          "name": "session_save_state",
+          "group": "session",
+          "description": "Save session state to disk."
+        },
+        {
+          "name": "session_list",
+          "group": "session",
+          "description": "List all saved sessions."
+        }
+      ]
     },
     {
       "name": "gimp",
@@ -959,7 +1180,305 @@
       "skill_md": "inkscape/agent-harness/cli_anything/inkscape/skills/SKILL.md",
       "category": "image",
       "contributor": "CLI-Anything-Team",
-      "contributor_url": "https://github.com/HKUDS/CLI-Anything"
+      "contributor_url": "https://github.com/HKUDS/CLI-Anything",
+      "mcp_tool_prefix": "inkscape",
+      "commands": [
+        {
+          "name": "document_open",
+          "group": "document",
+          "description": "Open an existing project."
+        },
+        {
+          "name": "document_save",
+          "group": "document",
+          "description": "Save the current project."
+        },
+        {
+          "name": "document_info",
+          "group": "document",
+          "description": "Show document information."
+        },
+        {
+          "name": "document_profiles",
+          "group": "document",
+          "description": "List available document profiles."
+        },
+        {
+          "name": "document_canvas_size",
+          "group": "document",
+          "description": "Set the canvas size."
+        },
+        {
+          "name": "document_units",
+          "group": "document",
+          "description": "Set the document units."
+        },
+        {
+          "name": "document_json",
+          "group": "document",
+          "description": "Print raw project JSON."
+        },
+        {
+          "name": "shape_add_rect",
+          "group": "shape",
+          "description": "Add a rectangle."
+        },
+        {
+          "name": "shape_add_circle",
+          "group": "shape",
+          "description": "Add a circle."
+        },
+        {
+          "name": "shape_add_ellipse",
+          "group": "shape",
+          "description": "Add an ellipse."
+        },
+        {
+          "name": "shape_add_line",
+          "group": "shape",
+          "description": "Add a line."
+        },
+        {
+          "name": "shape_add_polygon",
+          "group": "shape",
+          "description": "Add a polygon."
+        },
+        {
+          "name": "shape_add_path",
+          "group": "shape",
+          "description": "Add a path."
+        },
+        {
+          "name": "shape_add_star",
+          "group": "shape",
+          "description": "Add a star."
+        },
+        {
+          "name": "shape_remove",
+          "group": "shape",
+          "description": "Remove a shape by index."
+        },
+        {
+          "name": "shape_duplicate",
+          "group": "shape",
+          "description": "Duplicate a shape."
+        },
+        {
+          "name": "shape_list",
+          "group": "shape",
+          "description": "List all shapes/objects."
+        },
+        {
+          "name": "shape_get",
+          "group": "shape",
+          "description": "Get detailed info about a shape."
+        },
+        {
+          "name": "text_add",
+          "group": "text",
+          "description": "Add a text element."
+        },
+        {
+          "name": "text_set",
+          "group": "text",
+          "description": "Set a text property (text, font-family, font-size, fill, etc.)."
+        },
+        {
+          "name": "text_list",
+          "group": "text",
+          "description": "List all text objects."
+        },
+        {
+          "name": "style_set_fill",
+          "group": "style",
+          "description": "Set the fill color of an object."
+        },
+        {
+          "name": "style_set_stroke",
+          "group": "style",
+          "description": "Set the stroke color (and optionally width) of an object."
+        },
+        {
+          "name": "style_set_opacity",
+          "group": "style",
+          "description": "Set the opacity of an object (0.0-1.0)."
+        },
+        {
+          "name": "style_set",
+          "group": "style",
+          "description": "Set an arbitrary style property on an object."
+        },
+        {
+          "name": "style_get",
+          "group": "style",
+          "description": "Get the style properties of an object."
+        },
+        {
+          "name": "style_list_properties",
+          "group": "style",
+          "description": "List all available style properties."
+        },
+        {
+          "name": "transform_translate",
+          "group": "transform",
+          "description": "Translate (move) an object."
+        },
+        {
+          "name": "transform_rotate",
+          "group": "transform",
+          "description": "Rotate an object."
+        },
+        {
+          "name": "transform_scale",
+          "group": "transform",
+          "description": "Scale an object."
+        },
+        {
+          "name": "transform_skew_x",
+          "group": "transform",
+          "description": "Skew an object horizontally."
+        },
+        {
+          "name": "transform_skew_y",
+          "group": "transform",
+          "description": "Skew an object vertically."
+        },
+        {
+          "name": "transform_get",
+          "group": "transform",
+          "description": "Get the current transform of an object."
+        },
+        {
+          "name": "transform_clear",
+          "group": "transform",
+          "description": "Clear all transforms from an object."
+        },
+        {
+          "name": "layer_add",
+          "group": "layer",
+          "description": "Add a new layer."
+        },
+        {
+          "name": "layer_remove",
+          "group": "layer",
+          "description": "Remove a layer by index."
+        },
+        {
+          "name": "layer_move_object",
+          "group": "layer",
+          "description": "Move an object to a different layer."
+        },
+        {
+          "name": "layer_set",
+          "group": "layer",
+          "description": "Set a layer property (name, visible, locked, opacity)."
+        },
+        {
+          "name": "layer_list",
+          "group": "layer",
+          "description": "List all layers."
+        },
+        {
+          "name": "layer_reorder",
+          "group": "layer",
+          "description": "Move a layer from one position to another."
+        },
+        {
+          "name": "layer_get",
+          "group": "layer",
+          "description": "Get detailed info about a layer."
+        },
+        {
+          "name": "path_union",
+          "group": "path",
+          "description": "Union of two objects."
+        },
+        {
+          "name": "path_intersection",
+          "group": "path",
+          "description": "Intersection of two objects."
+        },
+        {
+          "name": "path_difference",
+          "group": "path",
+          "description": "Difference of two objects (A minus B)."
+        },
+        {
+          "name": "path_exclusion",
+          "group": "path",
+          "description": "Exclusion (XOR) of two objects."
+        },
+        {
+          "name": "path_convert",
+          "group": "path",
+          "description": "Convert a shape to a path."
+        },
+        {
+          "name": "path_list_operations",
+          "group": "path",
+          "description": "List available path boolean operations."
+        },
+        {
+          "name": "gradient_add_linear",
+          "group": "gradient",
+          "description": "Add a linear gradient."
+        },
+        {
+          "name": "gradient_add_radial",
+          "group": "gradient",
+          "description": "Add a radial gradient."
+        },
+        {
+          "name": "gradient_apply",
+          "group": "gradient",
+          "description": "Apply a gradient to an object."
+        },
+        {
+          "name": "gradient_list",
+          "group": "gradient",
+          "description": "List all gradients."
+        },
+        {
+          "name": "export_png",
+          "group": "export",
+          "description": "Render the document to PNG."
+        },
+        {
+          "name": "export_svg",
+          "group": "export",
+          "description": "Export the document as SVG."
+        },
+        {
+          "name": "export_pdf",
+          "group": "export",
+          "description": "Export the document as PDF (requires Inkscape)."
+        },
+        {
+          "name": "export_presets",
+          "group": "export",
+          "description": "List export presets."
+        },
+        {
+          "name": "session_status",
+          "group": "session",
+          "description": "Show session status."
+        },
+        {
+          "name": "session_undo",
+          "group": "session",
+          "description": "Undo the last operation."
+        },
+        {
+          "name": "session_redo",
+          "group": "session",
+          "description": "Redo the last undone operation."
+        },
+        {
+          "name": "session_history",
+          "group": "session",
+          "description": "Show undo history."
+        }
+      ]
     },
     {
       "name": "kdenlive",
@@ -973,7 +1492,195 @@
       "skill_md": "kdenlive/agent-harness/cli_anything/kdenlive/skills/SKILL.md",
       "category": "video",
       "contributor": "CLI-Anything-Team",
-      "contributor_url": "https://github.com/HKUDS/CLI-Anything"
+      "contributor_url": "https://github.com/HKUDS/CLI-Anything",
+      "mcp_tool_prefix": "kdenlive",
+      "commands": [
+        {
+          "name": "project_new",
+          "group": "project",
+          "description": "Create a new project."
+        },
+        {
+          "name": "project_open",
+          "group": "project",
+          "description": "Open an existing project."
+        },
+        {
+          "name": "project_save",
+          "group": "project",
+          "description": "Save the current project."
+        },
+        {
+          "name": "project_info",
+          "group": "project",
+          "description": "Show project information."
+        },
+        {
+          "name": "project_profiles",
+          "group": "project",
+          "description": "List available video profiles."
+        },
+        {
+          "name": "project_json",
+          "group": "project",
+          "description": "Print raw project JSON."
+        },
+        {
+          "name": "bin_remove",
+          "group": "bin",
+          "description": "Remove a clip from the bin."
+        },
+        {
+          "name": "bin_list",
+          "group": "bin",
+          "description": "List all clips in the bin."
+        },
+        {
+          "name": "bin_get",
+          "group": "bin",
+          "description": "Get detailed clip info."
+        },
+        {
+          "name": "timeline_add_track",
+          "group": "timeline",
+          "description": "Add a track to the timeline."
+        },
+        {
+          "name": "timeline_remove_track",
+          "group": "timeline",
+          "description": "Remove a track."
+        },
+        {
+          "name": "timeline_add_clip",
+          "group": "timeline",
+          "description": "Add a clip to a track."
+        },
+        {
+          "name": "timeline_remove_clip",
+          "group": "timeline",
+          "description": "Remove a clip from a track."
+        },
+        {
+          "name": "timeline_trim",
+          "group": "timeline",
+          "description": "Trim a clip's in/out points."
+        },
+        {
+          "name": "timeline_split",
+          "group": "timeline",
+          "description": "Split a clip at a time offset."
+        },
+        {
+          "name": "timeline_move",
+          "group": "timeline",
+          "description": "Move a clip to a new position."
+        },
+        {
+          "name": "timeline_list",
+          "group": "timeline",
+          "description": "List all tracks."
+        },
+        {
+          "name": "filter_add",
+          "group": "filter",
+          "description": "Add a filter to a clip."
+        },
+        {
+          "name": "filter_remove",
+          "group": "filter",
+          "description": "Remove a filter from a clip."
+        },
+        {
+          "name": "filter_set",
+          "group": "filter",
+          "description": "Set a filter parameter."
+        },
+        {
+          "name": "filter_list",
+          "group": "filter",
+          "description": "List filters on a clip."
+        },
+        {
+          "name": "filter_available",
+          "group": "filter",
+          "description": "List all available filters."
+        },
+        {
+          "name": "keyframe_remove",
+          "group": "keyframe",
+          "description": "Remove a keyframe at a specific time."
+        },
+        {
+          "name": "keyframe_list",
+          "group": "keyframe",
+          "description": "List keyframes for a parameter."
+        },
+        {
+          "name": "keyframe_clear",
+          "group": "keyframe",
+          "description": "Clear all keyframes from a parameter."
+        },
+        {
+          "name": "transition_add",
+          "group": "transition",
+          "description": "Add a transition between tracks."
+        },
+        {
+          "name": "transition_remove",
+          "group": "transition",
+          "description": "Remove a transition."
+        },
+        {
+          "name": "transition_set",
+          "group": "transition",
+          "description": "Set a transition parameter."
+        },
+        {
+          "name": "transition_list",
+          "group": "transition",
+          "description": "List all transitions."
+        },
+        {
+          "name": "guide_remove",
+          "group": "guide",
+          "description": "Remove a guide."
+        },
+        {
+          "name": "guide_list",
+          "group": "guide",
+          "description": "List all guides."
+        },
+        {
+          "name": "export_xml",
+          "group": "export",
+          "description": "Generate Kdenlive/MLT XML."
+        },
+        {
+          "name": "export_presets",
+          "group": "export",
+          "description": "List available render presets."
+        },
+        {
+          "name": "session_status",
+          "group": "session",
+          "description": "Show session status."
+        },
+        {
+          "name": "session_undo",
+          "group": "session",
+          "description": "Undo the last operation."
+        },
+        {
+          "name": "session_redo",
+          "group": "session",
+          "description": "Redo the last undone operation."
+        },
+        {
+          "name": "session_history",
+          "group": "session",
+          "description": "Show undo history."
+        }
+      ]
     },
     {
       "name": "libreoffice",
@@ -987,7 +1694,175 @@
       "skill_md": "libreoffice/agent-harness/cli_anything/libreoffice/skills/SKILL.md",
       "category": "office",
       "contributor": "CLI-Anything-Team",
-      "contributor_url": "https://github.com/HKUDS/CLI-Anything"
+      "contributor_url": "https://github.com/HKUDS/CLI-Anything",
+      "mcp_tool_prefix": "libreoffice",
+      "commands": [
+        {
+          "name": "document_open",
+          "group": "document",
+          "description": "Open an existing project file."
+        },
+        {
+          "name": "document_save",
+          "group": "document",
+          "description": "Save the current document."
+        },
+        {
+          "name": "document_info",
+          "group": "document",
+          "description": "Show document information."
+        },
+        {
+          "name": "document_profiles",
+          "group": "document",
+          "description": "List available page profiles."
+        },
+        {
+          "name": "document_json",
+          "group": "document",
+          "description": "Print raw project JSON."
+        },
+        {
+          "name": "writer_add_heading",
+          "group": "writer",
+          "description": "Add a heading to the document."
+        },
+        {
+          "name": "writer_add_table",
+          "group": "writer",
+          "description": "Add a table to the document."
+        },
+        {
+          "name": "writer_add_page_break",
+          "group": "writer",
+          "description": "Add a page break."
+        },
+        {
+          "name": "writer_remove",
+          "group": "writer",
+          "description": "Remove a content item by index."
+        },
+        {
+          "name": "writer_list",
+          "group": "writer",
+          "description": "List all content items."
+        },
+        {
+          "name": "writer_set_text",
+          "group": "writer",
+          "description": "Set the text of a content item."
+        },
+        {
+          "name": "calc_add_sheet",
+          "group": "calc",
+          "description": "Add a new sheet."
+        },
+        {
+          "name": "calc_remove_sheet",
+          "group": "calc",
+          "description": "Remove a sheet by index."
+        },
+        {
+          "name": "calc_rename_sheet",
+          "group": "calc",
+          "description": "Rename a sheet."
+        },
+        {
+          "name": "calc_set_cell",
+          "group": "calc",
+          "description": "Set a cell value."
+        },
+        {
+          "name": "calc_get_cell",
+          "group": "calc",
+          "description": "Get a cell value."
+        },
+        {
+          "name": "calc_list_sheets",
+          "group": "calc",
+          "description": "List all sheets."
+        },
+        {
+          "name": "impress_add_slide",
+          "group": "impress",
+          "description": "Add a slide to the presentation."
+        },
+        {
+          "name": "impress_remove_slide",
+          "group": "impress",
+          "description": "Remove a slide by index."
+        },
+        {
+          "name": "impress_set_content",
+          "group": "impress",
+          "description": "Update a slide's title and/or content."
+        },
+        {
+          "name": "impress_list_slides",
+          "group": "impress",
+          "description": "List all slides."
+        },
+        {
+          "name": "impress_add_element",
+          "group": "impress",
+          "description": "Add an element to a slide."
+        },
+        {
+          "name": "style_modify",
+          "group": "style",
+          "description": "Modify an existing style."
+        },
+        {
+          "name": "style_list",
+          "group": "style",
+          "description": "List all styles."
+        },
+        {
+          "name": "style_apply",
+          "group": "style",
+          "description": "Apply a style to a content item (Writer only)."
+        },
+        {
+          "name": "style_remove",
+          "group": "style",
+          "description": "Remove a style."
+        },
+        {
+          "name": "export_presets",
+          "group": "export",
+          "description": "List export presets."
+        },
+        {
+          "name": "export_preset_info",
+          "group": "export",
+          "description": "Show preset details."
+        },
+        {
+          "name": "export_render",
+          "group": "export",
+          "description": "Export the document to a file."
+        },
+        {
+          "name": "session_status",
+          "group": "session",
+          "description": "Show session status."
+        },
+        {
+          "name": "session_undo",
+          "group": "session",
+          "description": "Undo the last operation."
+        },
+        {
+          "name": "session_redo",
+          "group": "session",
+          "description": "Redo the last undone operation."
+        },
+        {
+          "name": "session_history",
+          "group": "session",
+          "description": "Show undo history."
+        }
+      ]
     },
     {
       "name": "mubu",
@@ -1001,7 +1876,135 @@
       "skill_md": "mubu/agent-harness/cli_anything/mubu/skills/SKILL.md",
       "category": "office",
       "contributor": "cnfjlhj",
-      "contributor_url": "https://github.com/cnfjlhj"
+      "contributor_url": "https://github.com/cnfjlhj",
+      "mcp_tool_prefix": "mubu",
+      "commands": [
+        {
+          "name": "discover_docs",
+          "group": "discover",
+          "description": "List latest known document snapshots from local backups."
+        },
+        {
+          "name": "discover_folders",
+          "group": "discover",
+          "description": "List folder metadata from local RxDB storage."
+        },
+        {
+          "name": "discover_folder_docs",
+          "group": "discover",
+          "description": "List document metadata for one folder."
+        },
+        {
+          "name": "discover_path_docs",
+          "group": "discover",
+          "description": "List documents for one folder path or folder id."
+        },
+        {
+          "name": "discover_recent",
+          "group": "discover",
+          "description": "List recently active documents using backups, metadata, and sync logs."
+        },
+        {
+          "name": "discover_daily",
+          "group": "discover",
+          "description": "Find Daily-style folders and list the documents inside them."
+        },
+        {
+          "name": "discover_daily_current",
+          "group": "discover",
+          "description": "Resolve the current daily document from one Daily-style folder."
+        },
+        {
+          "name": "inspect_show",
+          "group": "inspect",
+          "description": "Show the latest backup tree for one document."
+        },
+        {
+          "name": "inspect_search",
+          "group": "inspect",
+          "description": "Search latest backups for matching node text or note content."
+        },
+        {
+          "name": "inspect_changes",
+          "group": "inspect",
+          "description": "Parse recent client-sync change events from local logs."
+        },
+        {
+          "name": "inspect_links",
+          "group": "inspect",
+          "description": "Extract outbound Mubu document links from one document backup."
+        },
+        {
+          "name": "inspect_open_path",
+          "group": "inspect",
+          "description": "Open one document by full path, suffix path, title, or doc id."
+        },
+        {
+          "name": "inspect_doc_nodes",
+          "group": "inspect",
+          "description": "List live document nodes with node ids and update-target paths."
+        },
+        {
+          "name": "inspect_daily_nodes",
+          "group": "inspect",
+          "description": "List live nodes from the current daily document in one step."
+        },
+        {
+          "name": "mutate_create_child",
+          "group": "mutate",
+          "description": "Build or execute one child-node creation against the live Mubu API."
+        },
+        {
+          "name": "mutate_delete_node",
+          "group": "mutate",
+          "description": "Build or execute one node deletion against the live Mubu API."
+        },
+        {
+          "name": "mutate_update_text",
+          "group": "mutate",
+          "description": "Build or execute one text update against the live Mubu API."
+        },
+        {
+          "name": "session_status",
+          "group": "session",
+          "description": "Show the current session state."
+        },
+        {
+          "name": "session_state_path",
+          "group": "session",
+          "description": "Show the session state file path."
+        },
+        {
+          "name": "session_use_doc",
+          "group": "session",
+          "description": "Persist the current document reference."
+        },
+        {
+          "name": "session_use_node",
+          "group": "session",
+          "description": "Persist the current node reference."
+        },
+        {
+          "name": "session_use_daily",
+          "group": "session",
+          "description": "Resolve and persist the current daily document reference."
+        },
+        {
+          "name": "session_clear_doc",
+          "group": "session",
+          "description": "Clear the current document reference."
+        },
+        {
+          "name": "session_clear_node",
+          "group": "session",
+          "description": "Clear the current node reference."
+        },
+        {
+          "name": "session_history",
+          "group": "session",
+          "description": "Show recent command history stored in session state."
+        }
+      ]
     },
     {
       "name": "mermaid",
@@ -1029,7 +2032,80 @@
       "skill_md": "notebooklm/agent-harness/cli_anything/notebooklm/skills/SKILL.md",
       "category": "ai",
       "contributor": "Haimbeau1o",
-      "contributor_url": "https://github.com/Haimbeau1o"
+      "contributor_url": "https://github.com/Haimbeau1o",
+      "mcp_tool_prefix": "notebooklm",
+      "commands": [
+        {
+          "name": "auth_status",
+          "group": "auth",
+          "description": "Check authentication status."
+        },
+        {
+          "name": "auth_login",
+          "group": "auth",
+          "description": "Open the browser login flow."
+        },
+        {
+          "name": "auth_check",
+          "group": "auth",
+          "description": "Run a lightweight authentication check."
+        },
+        {
+          "name": "notebook_list",
+          "group": "notebook",
+          "description": "List notebooks."
+        },
+        {
+          "name": "notebook_create",
+          "group": "notebook",
+          "description": "Create a notebook."
+        },
+        {
+          "name": "notebook_summary",
+          "group": "notebook",
+          "description": "Summarize the active notebook."
+        },
+        {
+          "name": "source_list",
+          "group": "source",
+          "description": "List sources for a notebook."
+        },
+        {
+          "name": "source_add_url",
+          "group": "source",
+          "description": "Add a URL source."
+        },
+        {
+          "name": "chat_ask",
+          "group": "chat",
+          "description": "Ask a question against a notebook."
+        },
+        {
+          "name": "chat_history",
+          "group": "chat",
+          "description": "Show chat history."
+        },
+        {
+          "name": "artifact_list",
+          "group": "artifact",
+          "description": "List notebook artifacts."
+        },
+        {
+          "name": "artifact_generate_report",
+          "group": "artifact",
+          "description": "Generate a report artifact."
+        },
+        {
+          "name": "download_report",
+          "group": "download",
+          "description": "Download the latest report artifact."
+        },
+        {
+          "name": "share_status",
+          "group": "share",
+          "description": "Inspect notebook sharing state."
+        }
+      ]
     },
     {
       "name": "ollama",
@@ -1041,7 +2117,65 @@
       "install_cmd": "pip install git+https://github.com/HKUDS/CLI-Anything.git#subdirectory=ollama/agent-harness",
       "entry_point": "cli-anything-ollama",
       "skill_md": "ollama/agent-harness/cli_anything/ollama/skills/SKILL.md",
-      "category": "ai"
+      "category": "ai",
+      "mcp_tool_prefix": "ollama",
+      "commands": [
+        {
+          "name": "model_list",
+          "group": "model",
+          "description": "List locally available models."
+        },
+        {
+          "name": "model_show",
+          "group": "model",
+          "description": "Show model details (parameters, template, license)."
+        },
+        {
+          "name": "model_pull",
+          "group": "model",
+          "description": "Download a model from the Ollama library."
+        },
+        {
+          "name": "model_rm",
+          "group": "model",
+          "description": "Delete a model from local storage."
+        },
+        {
+          "name": "model_copy",
+          "group": "model",
+          "description": "Copy a model to a new name."
+        },
+        {
+          "name": "model_ps",
+          "group": "model",
+          "description": "List models currently loaded in memory."
+        },
+        {
+          "name": "generate_text",
+          "group": "generate",
+          "description": "Generate text from a prompt."
+        },
+        {
+          "name": "server_status",
+          "group": "server",
+          "description": "Check if Ollama server is running."
+        },
+        {
+          "name": "server_version",
+          "group": "server",
+          "description": "Show Ollama server version."
+        },
+        {
+          "name": "session_status",
+          "group": "session",
+          "description": "Show current session state."
+        },
+        {
+          "name": "session_history",
+          "group": "session",
+          "description": "Show chat history for current session."
+        }
+      ]
     },
     {
       "name": "obs-studio",
@@ -1055,7 +2189,220 @@
       "skill_md": "obs-studio/agent-harness/cli_anything/obs_studio/skills/SKILL.md",
       "category": "streaming",
       "contributor": "CLI-Anything-Team",
-      "contributor_url": "https://github.com/HKUDS/CLI-Anything"
+      "contributor_url": "https://github.com/HKUDS/CLI-Anything",
+      "mcp_tool_prefix": "obs-studio",
+      "commands": [
+        {
+          "name": "project_new",
+          "group": "project",
+          "description": "Create a new OBS scene collection."
+        },
+        {
+          "name": "project_open",
+          "group": "project",
+          "description": "Open an existing project."
+        },
+        {
+          "name": "project_save",
+          "group": "project",
+          "description": "Save the current project."
+        },
+        {
+          "name": "project_info",
+          "group": "project",
+          "description": "Show project information."
+        },
+        {
+          "name": "project_json",
+          "group": "project",
+          "description": "Print raw project JSON."
+        },
+        {
+          "name": "scene_add",
+          "group": "scene",
+          "description": "Add a new scene."
+        },
+        {
+          "name": "scene_remove",
+          "group": "scene",
+          "description": "Remove a scene by index."
+        },
+        {
+          "name": "scene_duplicate",
+          "group": "scene",
+          "description": "Duplicate a scene."
+        },
+        {
+          "name": "scene_set_active",
+          "group": "scene",
+          "description": "Set the active scene."
+        },
+        {
+          "name": "scene_list",
+          "group": "scene",
+          "description": "List all scenes."
+        },
+        {
+          "name": "source_add",
+          "group": "source",
+          "description": "Add a source to a scene."
+        },
+        {
+          "name": "source_remove",
+          "group": "source",
+          "description": "Remove a source by index."
+        },
+        {
+          "name": "source_duplicate",
+          "group": "source",
+          "description": "Duplicate a source."
+        },
+        {
+          "name": "source_set",
+          "group": "source",
+          "description": "Set a source property (name, visible, locked, opacity, rotation)."
+        },
+        {
+          "name": "source_transform",
+          "group": "source",
+          "description": "Transform a source (position, size, crop, rotation)."
+        },
+        {
+          "name": "source_list",
+          "group": "source",
+          "description": "List all sources in a scene."
+        },
+        {
+          "name": "filter_add",
+          "group": "filter",
+          "description": "Add a filter to a source."
+        },
+        {
+          "name": "filter_remove",
+          "group": "filter",
+          "description": "Remove a filter from a source."
+        },
+        {
+          "name": "filter_set",
+          "group": "filter",
+          "description": "Set a filter parameter."
+        },
+        {
+          "name": "filter_list",
+          "group": "filter",
+          "description": "List all filters on a source."
+        },
+        {
+          "name": "filter_list_available",
+          "group": "filter",
+          "description": "List all available filter types."
+        },
+        {
+          "name": "audio_add",
+          "group": "audio",
+          "description": "Add a global audio source."
+        },
+        {
+          "name": "audio_remove",
+          "group": "audio",
+          "description": "Remove a global audio source."
+        },
+        {
+          "name": "audio_volume",
+          "group": "audio",
+          "description": "Set volume for an audio source (0.0-3.0)."
+        },
+        {
+          "name": "audio_mute",
+          "group": "audio",
+          "description": "Mute an audio source."
+        },
+        {
+          "name": "audio_unmute",
+          "group": "audio",
+          "description": "Unmute an audio source."
+        },
+        {
+          "name": "audio_monitor",
+          "group": "audio",
+          "description": "Set audio monitoring type."
+        },
+        {
+          "name": "audio_list",
+          "group": "audio",
+          "description": "List all audio sources."
+        },
+        {
+          "name": "transition_add",
+          "group": "transition",
+          "description": "Add a transition."
+        },
+        {
+          "name": "transition_remove",
+          "group": "transition",
+          "description": "Remove a transition."
+        },
+        {
+          "name": "transition_set_active",
+          "group": "transition",
+          "description": "Set the active transition."
+        },
+        {
+          "name": "transition_duration",
+          "group": "transition",
+          "description": "Set transition duration in milliseconds."
+        },
+        {
+          "name": "transition_list",
+          "group": "transition",
+          "description": "List all transitions."
+        },
+        {
+          "name": "output_streaming",
+          "group": "output",
+          "description": "Configure streaming settings."
+        },
+        {
+          "name": "output_recording",
+          "group": "output",
+          "description": "Configure recording settings."
+        },
+        {
+          "name": "output_settings",
+          "group": "output",
+          "description": "Configure output settings."
+        },
+        {
+          "name": "output_info",
+          "group": "output",
+          "description": "Show current output configuration."
+        },
+        {
+          "name": "output_presets",
+          "group": "output",
+          "description": "List available encoding presets."
+        },
+        {
+          "name": "session_status",
+          "group": "session",
+          "description": "Show session status."
+        },
+        {
+          "name": "session_undo",
+          "group": "session",
+          "description": "Undo the last operation."
+        },
+        {
+          "name": "session_redo",
+          "group": "session",
+          "description": "Redo the last undone operation."
+        },
+        {
+          "name": "session_history",
+          "group": "session",
+          "description": "Show undo history."
+        }
+      ]
     },
     {
       "name": "shotcut",
@@ -1069,7 +2416,280 @@
       "skill_md": "shotcut/agent-harness/cli_anything/shotcut/skills/SKILL.md",
       "category": "video",
       "contributor": "CLI-Anything-Team",
-      "contributor_url": "https://github.com/HKUDS/CLI-Anything"
+      "contributor_url": "https://github.com/HKUDS/CLI-Anything",
+      "mcp_tool_prefix": "shotcut",
+      "commands": [
+        {
+          "name": "project_open",
+          "group": "project",
+          "description": "Open an existing .mlt project file."
+        },
+        {
+          "name": "project_save",
+          "group": "project",
+          "description": "Save the current project. Optionally specify a new path."
+        },
+        {
+          "name": "project_info",
+          "group": "project",
+          "description": "Show detailed project information."
+        },
+        {
+          "name": "project_profiles",
+          "group": "project",
+          "description": "List available video profiles."
+        },
+        {
+          "name": "project_xml",
+          "group": "project",
+          "description": "Print the raw MLT XML of the current project."
+        },
+        {
+          "name": "timeline_show",
+          "group": "timeline",
+          "description": "Show the timeline overview."
+        },
+        {
+          "name": "timeline_tracks",
+          "group": "timeline",
+          "description": "List all tracks."
+        },
+        {
+          "name": "timeline_remove_track",
+          "group": "timeline",
+          "description": "Remove a track by index."
+        },
+        {
+          "name": "timeline_add_clip",
+          "group": "timeline",
+          "description": "Add a media clip to a track."
+        },
+        {
+          "name": "timeline_remove_clip",
+          "group": "timeline",
+          "description": "Remove a clip from a track."
+        },
+        {
+          "name": "timeline_move_clip",
+          "group": "timeline",
+          "description": "Move a clip between tracks or positions."
+        },
+        {
+          "name": "timeline_trim",
+          "group": "timeline",
+          "description": "Trim a clip's in/out points."
+        },
+        {
+          "name": "timeline_split",
+          "group": "timeline",
+          "description": "Split a clip into two at the given timecode."
+        },
+        {
+          "name": "timeline_clips",
+          "group": "timeline",
+          "description": "List all clips on a track."
+        },
+        {
+          "name": "timeline_add_blank",
+          "group": "timeline",
+          "description": "Add a blank gap to a track."
+        },
+        {
+          "name": "timeline_set_name",
+          "group": "timeline",
+          "description": "Set a track's display name."
+        },
+        {
+          "name": "timeline_mute",
+          "group": "timeline",
+          "description": "Mute or unmute a track."
+        },
+        {
+          "name": "timeline_hide",
+          "group": "timeline",
+          "description": "Hide or unhide a video track."
+        },
+        {
+          "name": "filter_info",
+          "group": "filter",
+          "description": "Show detailed info about a filter and its parameters."
+        },
+        {
+          "name": "filter_set",
+          "group": "filter",
+          "description": "Set a parameter on a filter."
+        },
+        {
+          "name": "keyframe_remove",
+          "group": "keyframe",
+          "description": "Remove a keyframe at a specific time."
+        },
+        {
+          "name": "keyframe_list",
+          "group": "keyframe",
+          "description": "List keyframes for a filter parameter."
+        },
+        {
+          "name": "keyframe_clear",
+          "group": "keyframe",
+          "description": "Clear all keyframes from a parameter."
+        },
+        {
+          "name": "media_probe",
+          "group": "media",
+          "description": "Analyze a media file's properties."
+        },
+        {
+          "name": "media_list",
+          "group": "media",
+          "description": "List all media clips in the current project."
+        },
+        {
+          "name": "media_check",
+          "group": "media",
+          "description": "Check all media files for existence."
+        },
+        {
+          "name": "export_presets",
+          "group": "export",
+          "description": "List available export presets."
+        },
+        {
+          "name": "export_preset_info",
+          "group": "export",
+          "description": "Show details of an export preset."
+        },
+        {
+          "name": "export_render",
+          "group": "export",
+          "description": "Render the project to a video file."
+        },
+        {
+          "name": "transition_info",
+          "group": "transition",
+          "description": "Show detailed info about a transition type."
+        },
+        {
+          "name": "transition_remove",
+          "group": "transition",
+          "description": "Remove a transition by index."
+        },
+        {
+          "name": "transition_set",
+          "group": "transition",
+          "description": "Set a parameter on a transition."
+        },
+        {
+          "name": "transition_list",
+          "group": "transition",
+          "description": "List all transitions on the timeline."
+        },
+        {
+          "name": "composite_blend_modes",
+          "group": "composite",
+          "description": "List all available blend modes."
+        },
+        {
+          "name": "composite_set_blend",
+          "group": "composite",
+          "description": "Set the blend mode for a track."
+        },
+        {
+          "name": "composite_get_blend",
+          "group": "composite",
+          "description": "Get the current blend mode for a track."
+        },
+        {
+          "name": "composite_set_opacity",
+          "group": "composite",
+          "description": "Set the opacity of a track (0.0-1.0)."
+        },
+        {
+          "name": "composite_pip",
+          "group": "composite",
+          "description": "Set picture-in-picture position for a clip."
+        },
+        {
+          "name": "sync_list",
+          "group": "sync",
+          "description": "List all imported sync markers on the timeline."
+        },
+        {
+          "name": "title_add",
+          "group": "title",
+          "description": "Add a text title to a clip."
+        },
+        {
+          "name": "title_animate",
+          "group": "title",
+          "description": "Apply a preset animation to a title filter."
+        },
+        {
+          "name": "title_list_presets",
+          "group": "title",
+          "description": "List available title animation presets."
+        },
+        {
+          "name": "mask_types",
+          "group": "mask",
+          "description": "List available mask types."
+        },
+        {
+          "name": "mask_add",
+          "group": "mask",
+          "description": "Add a mask to a clip or track."
+        },
+        {
+          "name": "mask_set",
+          "group": "mask",
+          "description": "Set a mask parameter."
+        },
+        {
+          "name": "mask_animate",
+          "group": "mask",
+          "description": "Animate a mask parameter with keyframes."
+        },
+        {
+          "name": "mask_track_matte",
+          "group": "mask",
+          "description": "Add a track matte transition between two tracks."
+        },
+        {
+          "name": "mask_list",
+          "group": "mask",
+          "description": "List masks on a target."
+        },
+        {
+          "name": "mask_remove",
+          "group": "mask",
+          "description": "Remove a mask filter."
+        },
+        {
+          "name": "session_status",
+          "group": "session",
+          "description": "Show current session status."
+        },
+        {
+          "name": "session_undo",
+          "group": "session",
+          "description": "Undo the last operation."
+        },
+        {
+          "name": "session_redo",
+          "group": "session",
+          "description": "Redo the last undone operation."
+        },
+        {
+          "name": "session_save",
+          "group": "session",
+          "description": "Save session state to disk."
+        },
+        {
+          "name": "session_list",
+          "group": "session",
+          "description": "List all saved sessions."
+        }
+      ]
     },
     {
       "name": "zoom",
@@ -1083,7 +2703,80 @@
       "skill_md": "zoom/agent-harness/cli_anything/zoom/skills/SKILL.md",
       "category": "communication",
       "contributor": "zhangxilong-43",
-      "contributor_url": "https://github.com/zhangxilong-43"
+      "contributor_url": "https://github.com/zhangxilong-43",
+      "mcp_tool_prefix": "zoom",
+      "commands": [
+        {
+          "name": "auth_status",
+          "group": "auth",
+          "description": "Check authentication status."
+        },
+        {
+          "name": "auth_logout",
+          "group": "auth",
+          "description": "Remove saved tokens."
+        },
+        {
+          "name": "meeting_info",
+          "group": "meeting",
+          "description": "Get meeting details."
+        },
+        {
+          "name": "meeting_delete",
+          "group": "meeting",
+          "description": "Delete a meeting."
+        },
+        {
+          "name": "meeting_join",
+          "group": "meeting",
+          "description": "Open meeting join URL in browser."
+        },
+        {
+          "name": "meeting_start",
+          "group": "meeting",
+          "description": "Open meeting start URL in browser (host only)."
+        },
+        {
+          "name": "participant_add",
+          "group": "participant",
+          "description": "Register a participant for a meeting."
+        },
+        {
+          "name": "participant_add_batch",
+          "group": "participant",
+          "description": "Batch register participants from a CSV file. CSV format: email,first_name,last_name (header row required)"
+        },
+        {
+          "name": "participant_remove",
+          "group": "participant",
+          "description": "Cancel a participant's registration."
+        },
+        {
+          "name": "participant_attended",
+          "group": "participant",
+          "description": "List participants who attended a past meeting. Requires the meeting UUID (not the numeric ID)."
+        },
+        {
+          "name": "recording_list",
+          "group": "recording",
+          "description": "List cloud recordings."
+        },
+        {
+          "name": "recording_files",
+          "group": "recording",
+          "description": "List recording files for a specific meeting."
+        },
+        {
+          "name": "recording_download",
+          "group": "recording",
+          "description": "Download a recording file. DOWNLOAD_URL: The download URL from 'recording files' output. OUTPUT_PATH: Local file path to save the recording."
+        },
+        {
+          "name": "recording_delete",
+          "group": "recording",
+          "description": "Delete all recordings for a meeting."
+        }
+      ]
     }
   ]
 }

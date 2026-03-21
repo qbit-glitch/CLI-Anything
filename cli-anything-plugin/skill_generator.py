@@ -600,16 +600,25 @@ def update_registry_commands(harness_path: str, registry_path: str) -> None:
     registry_file = Path(registry_path)
     data = json.loads(registry_file.read_text(encoding="utf-8"))
 
-    # Step 4 — locate entry
+    # Step 4 — locate entry (try exact match, then try with hyphen/underscore normalization)
     entry = next(
         (e for e in data.get("clis", []) if e.get("name") == software_name),
         None,
     )
     if entry is None:
+        # Try normalized versions: obs_studio -> obs-studio, etc.
+        normalized_name = software_name.replace("_", "-")
+        entry = next(
+            (e for e in data.get("clis", []) if e.get("name") == normalized_name),
+            None,
+        )
+    if entry is None:
         raise ValueError(f"Harness '{software_name}' not found in registry.json")
 
     # Step 5 — update entry in-place (idempotent: overwrites on re-run)
-    entry["mcp_tool_prefix"] = software_name
+    # Use the actual entry name from registry as mcp_tool_prefix (may differ from software_name)
+    entry_name = entry.get("name", software_name)
+    entry["mcp_tool_prefix"] = entry_name
     entry["commands"] = commands
 
     # Step 6 — write back pretty-printed
