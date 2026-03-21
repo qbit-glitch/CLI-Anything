@@ -35,6 +35,8 @@ from cli_anything.blender.core import camera as camera_mod
 from cli_anything.blender.core import shape_layers as shape_mod
 from cli_anything.blender.core import particles_bpy as particles_mod
 from cli_anything.blender.core import compositor as compositor_mod
+from cli_anything.blender.core import text_3d as text3d_mod
+from cli_anything.blender.core import expressions_bpy as expr_mod
 
 # Global session state
 _session: Optional[Session] = None
@@ -1421,6 +1423,339 @@ def render_script(output_path, frame, animation):
     click.echo(script)
 
 
+# ── Text 3D Commands ────────────────────────────────────────────
+@cli.group("text3d")
+def text3d_group():
+    """Per-character 3D text animation commands."""
+    pass
+
+
+@text3d_group.command("explode")
+@click.argument("text")
+@click.option("--font-path", default=None, help="Path to .ttf font file")
+@click.option("--size", type=float, default=1.0, help="Font size")
+@click.option("--extrude", type=float, default=0.0, help="Extrusion depth")
+@click.option("--prefix", default="char", help="Object name prefix")
+@click.option("--spacing", type=float, default=1.0, help="Character spacing multiplier")
+@handle_error
+def text3d_explode(text, font_path, size, extrude, prefix, spacing):
+    """Create individual text objects per character."""
+    sess = get_session()
+    sess.snapshot(f"Explode text: {text!r}")
+    result = text3d_mod.explode_text(
+        sess, text, font_path=font_path, size=size, extrude=extrude,
+        name_prefix=prefix, char_spacing=spacing,
+    )
+    output({"chars": len(result["chars"]), "script_lines": len(result["script_lines"])},
+           f"Exploded {len(result['chars'])} characters: {len(result['script_lines'])} script lines")
+
+
+@text3d_group.command("typewriter")
+@click.argument("text")
+@click.option("--speed", type=float, default=0.05, help="Time per character (seconds)")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--prefix", default="char", help="Object name prefix")
+@handle_error
+def text3d_typewriter(text, speed, fps, prefix):
+    """Animate per-character typewriter effect (scale 0→1)."""
+    sess = get_session()
+    sess.snapshot(f"Typewriter: {text!r}")
+    lines = text3d_mod.animate_typewriter(sess, text, speed=speed, fps=fps, name_prefix=prefix)
+    output({"text": text, "keyframes": len([l for l in lines if "keyframe_insert" in l])},
+           f"Typewriter: {len(lines)} script lines")
+
+
+@text3d_group.command("wave")
+@click.argument("text")
+@click.option("--amplitude", type=float, default=0.5, help="Vertical amplitude")
+@click.option("--frequency", type=float, default=2.0, help="Wave frequency (Hz)")
+@click.option("--duration", "-d", type=float, default=2.0, help="Duration (seconds)")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--prefix", default="char", help="Object name prefix")
+@handle_error
+def text3d_wave(text, amplitude, frequency, duration, fps, prefix):
+    """Animate per-character sine-wave vertical offset."""
+    sess = get_session()
+    lines = text3d_mod.animate_wave(
+        sess, text, amplitude=amplitude, frequency=frequency,
+        duration=duration, fps=fps, name_prefix=prefix,
+    )
+    output({"text": text, "script_lines": len(lines)}, f"Wave: {len(lines)} script lines")
+
+
+@text3d_group.command("cascade")
+@click.argument("text")
+@click.option("--duration", "-d", type=float, default=0.3, help="Per-char duration (s)")
+@click.option("--delay", type=float, default=0.05, help="Stagger delay (s)")
+@click.option("--direction", type=click.Choice(["left", "right", "top", "bottom"]),
+              default="left", help="Slide-in direction")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--prefix", default="char", help="Object name prefix")
+@handle_error
+def text3d_cascade(text, duration, delay, direction, fps, prefix):
+    """Animate per-character slide + scale cascade in."""
+    sess = get_session()
+    lines = text3d_mod.animate_cascade(
+        sess, text, duration=duration, delay=delay,
+        direction=direction, fps=fps, name_prefix=prefix,
+    )
+    output({"text": text, "script_lines": len(lines)}, f"Cascade: {len(lines)} script lines")
+
+
+@text3d_group.command("bounce")
+@click.argument("text")
+@click.option("--duration", "-d", type=float, default=0.6, help="Per-char duration (s)")
+@click.option("--delay", type=float, default=0.04, help="Stagger delay (s)")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--prefix", default="char", help="Object name prefix")
+@handle_error
+def text3d_bounce(text, duration, delay, fps, prefix):
+    """Animate per-character drop with bounce easing."""
+    sess = get_session()
+    lines = text3d_mod.animate_bounce(
+        sess, text, duration=duration, delay=delay, fps=fps, name_prefix=prefix,
+    )
+    output({"text": text, "script_lines": len(lines)}, f"Bounce: {len(lines)} script lines")
+
+
+@text3d_group.command("scale-pop")
+@click.argument("text")
+@click.option("--duration", "-d", type=float, default=0.4, help="Per-char duration (s)")
+@click.option("--delay", type=float, default=0.05, help="Stagger delay (s)")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--prefix", default="char", help="Object name prefix")
+@handle_error
+def text3d_scale_pop(text, duration, delay, fps, prefix):
+    """Animate per-character scale with overshoot (ease_out_back)."""
+    sess = get_session()
+    lines = text3d_mod.animate_scale_pop(
+        sess, text, duration=duration, delay=delay, fps=fps, name_prefix=prefix,
+    )
+    output({"text": text, "script_lines": len(lines)}, f"Scale-pop: {len(lines)} script lines")
+
+
+@text3d_group.command("spiral-in")
+@click.argument("text")
+@click.option("--radius", type=float, default=3.0, help="Orbit start radius")
+@click.option("--rotations", type=float, default=1.0, help="Number of rotations")
+@click.option("--duration", "-d", type=float, default=1.0, help="Per-char duration (s)")
+@click.option("--delay", type=float, default=0.06, help="Stagger delay (s)")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--prefix", default="char", help="Object name prefix")
+@handle_error
+def text3d_spiral_in(text, radius, rotations, duration, delay, fps, prefix):
+    """Animate per-character spiral-in from orbit."""
+    sess = get_session()
+    lines = text3d_mod.animate_spiral_in(
+        sess, text, radius=radius, rotations=rotations,
+        duration=duration, delay=delay, fps=fps, name_prefix=prefix,
+    )
+    output({"text": text, "script_lines": len(lines)}, f"Spiral-in: {len(lines)} script lines")
+
+
+@text3d_group.command("extrude-in")
+@click.argument("text")
+@click.option("--max-depth", type=float, default=0.3, help="Final extrusion depth")
+@click.option("--duration", "-d", type=float, default=0.5, help="Per-char duration (s)")
+@click.option("--delay", type=float, default=0.04, help="Stagger delay (s)")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--prefix", default="char", help="Object name prefix")
+@handle_error
+def text3d_extrude_in(text, max_depth, duration, delay, fps, prefix):
+    """Animate per-character extrusion depth from flat to 3D."""
+    sess = get_session()
+    lines = text3d_mod.animate_extrude_in(
+        sess, text, max_depth=max_depth, duration=duration,
+        delay=delay, fps=fps, name_prefix=prefix,
+    )
+    output({"text": text, "script_lines": len(lines)}, f"Extrude-in: {len(lines)} script lines")
+
+
+@text3d_group.command("rotate-3d")
+@click.argument("text")
+@click.option("--axis", type=click.Choice(["x", "y", "z"]), default="x", help="Rotation axis")
+@click.option("--angle", type=float, default=360.0, help="Starting angle in degrees")
+@click.option("--duration", "-d", type=float, default=0.5, help="Per-char duration (s)")
+@click.option("--delay", type=float, default=0.05, help="Stagger delay (s)")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--prefix", default="char", help="Object name prefix")
+@handle_error
+def text3d_rotate_3d(text, axis, angle, duration, delay, fps, prefix):
+    """Animate per-character 3D axis flip/rotation."""
+    sess = get_session()
+    lines = text3d_mod.animate_rotate_3d(
+        sess, text, axis=axis, angle=angle, duration=duration,
+        delay=delay, fps=fps, name_prefix=prefix,
+    )
+    output({"text": text, "axis": axis, "script_lines": len(lines)},
+           f"Rotate-3D: {len(lines)} script lines")
+
+
+# ── Expression Commands ──────────────────────────────────────────
+@cli.group("expression")
+def expression_group():
+    """Expression-driven procedural animation commands."""
+    pass
+
+
+@expression_group.command("apply")
+@click.argument("object_name")
+@click.argument("property_path")
+@click.argument("expression_str")
+@click.option("--duration", "-d", type=float, required=True, help="Duration in seconds")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--index", "-i", type=int, default=None,
+              help="Array index (0=X, 1=Y, 2=Z for vector properties)")
+@handle_error
+def expression_apply(object_name, property_path, expression_str, duration, fps, index):
+    """Bake an expression to per-frame keyframes.
+
+    Expression examples: 'time * 360', 'sin(time * 2) * 0.5', '1 + wiggle(2, 0.1)'
+    """
+    sess = get_session()
+    sess.snapshot(f"Apply expression: {object_name} {property_path}")
+    lines = expr_mod.apply_expression(
+        sess, object_name, property_path, expression_str, duration, fps=fps, index=index,
+    )
+    output({"object": object_name, "property": property_path,
+            "keyframes": len([l for l in lines if "keyframe_insert" in l])},
+           f"Expression bake: {len(lines)} script lines")
+
+
+@expression_group.command("wiggle")
+@click.argument("object_name")
+@click.argument("property_path")
+@click.option("--frequency", "-f", type=float, required=True, help="Wiggle frequency (Hz)")
+@click.option("--amplitude", "-a", type=float, required=True, help="Wiggle amplitude")
+@click.option("--duration", "-d", type=float, required=True, help="Duration in seconds")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--index", "-i", type=int, default=None, help="Array index")
+@handle_error
+def expression_wiggle(object_name, property_path, frequency, amplitude, duration, fps, index):
+    """Bake wiggle noise to per-frame keyframes."""
+    sess = get_session()
+    sess.snapshot(f"Wiggle: {object_name} {property_path}")
+    lines = expr_mod.apply_wiggle(
+        sess, object_name, property_path, frequency, amplitude, duration, fps=fps, index=index,
+    )
+    output({"object": object_name, "property": property_path,
+            "keyframes": len([l for l in lines if "keyframe_insert" in l])},
+           f"Wiggle bake: {len(lines)} script lines")
+
+
+@expression_group.command("procedural")
+@click.argument("object_name")
+@click.argument("property_path")
+@click.argument("expression")
+@click.option("--duration", "-d", type=float, required=True, help="Duration in seconds")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--index", "-i", type=int, default=None, help="Array index")
+@handle_error
+def expression_procedural(object_name, property_path, expression, duration, fps, index):
+    """Bake a procedural loop expression to per-frame keyframes."""
+    sess = get_session()
+    sess.snapshot(f"Procedural: {object_name} {property_path}")
+    lines = expr_mod.apply_procedural(
+        sess, object_name, property_path, expression, duration, fps=fps, index=index,
+    )
+    output({"object": object_name, "property": property_path,
+            "keyframes": len([l for l in lines if "keyframe_insert" in l])},
+           f"Procedural bake: {len(lines)} script lines")
+
+
+# ── Render Quality Commands ──────────────────────────────────────
+@render_group.command("motion-blur")
+@click.option("--enable/--disable", default=True, help="Enable/disable motion blur")
+@click.option("--shutter-speed", type=float, default=0.5, help="Shutter speed (0.0–1.0)")
+@click.option("--samples", type=int, default=16, help="Motion blur samples")
+@handle_error
+def render_motion_blur(enable, shutter_speed, samples):
+    """Configure motion blur settings."""
+    sess = get_session()
+    sess.snapshot("Set motion blur")
+    lines = render_mod.set_motion_blur(sess, enable=enable,
+                                       shutter_speed=shutter_speed, samples=samples)
+    output({"enable": enable, "shutter_speed": shutter_speed, "samples": samples,
+            "script_lines": len(lines)}, f"Motion blur: {len(lines)} script lines")
+
+
+@render_group.command("ambient-occlusion")
+@click.option("--enable/--disable", default=True, help="Enable/disable AO")
+@click.option("--distance", type=float, default=1.0, help="AO distance")
+@click.option("--factor", type=float, default=1.0, help="AO factor")
+@handle_error
+def render_ambient_occlusion(enable, distance, factor):
+    """Configure ambient occlusion (EEVEE)."""
+    sess = get_session()
+    sess.snapshot("Set ambient occlusion")
+    lines = render_mod.set_ambient_occlusion(sess, enable=enable, distance=distance, factor=factor)
+    output({"enable": enable, "distance": distance, "factor": factor,
+            "script_lines": len(lines)}, f"Ambient occlusion: {len(lines)} script lines")
+
+
+@render_group.command("hdri")
+@click.argument("hdri_path")
+@click.option("--rotation", type=float, default=0.0, help="Horizontal rotation (degrees)")
+@click.option("--strength", type=float, default=1.0, help="Light strength")
+@handle_error
+def render_hdri(hdri_path, rotation, strength):
+    """Set up HDRI environment lighting."""
+    sess = get_session()
+    sess.snapshot("Set HDRI lighting")
+    lines = render_mod.set_hdri_lighting(sess, hdri_path, rotation=rotation, strength=strength)
+    output({"hdri_path": hdri_path, "rotation": rotation, "strength": strength,
+            "script_lines": len(lines)}, f"HDRI lighting: {len(lines)} script lines")
+
+
+@render_group.command("transparent-background")
+@click.option("--enable/--disable", default=True, help="Enable/disable transparent background")
+@handle_error
+def render_transparent_background(enable):
+    """Enable/disable transparent (alpha) film background."""
+    sess = get_session()
+    sess.snapshot("Set transparent background")
+    lines = render_mod.set_transparent_background(sess, enable=enable)
+    output({"enable": enable, "script_lines": len(lines)},
+           f"Transparent background: {len(lines)} script lines")
+
+
+@render_group.command("film-exposure")
+@click.option("--value", type=float, default=0.0, help="Exposure in EV units")
+@handle_error
+def render_film_exposure(value):
+    """Set film exposure (EV compensation)."""
+    sess = get_session()
+    sess.snapshot("Set film exposure")
+    lines = render_mod.set_film_exposure(sess, value=value)
+    output({"value": value, "script_lines": len(lines)},
+           f"Film exposure: {len(lines)} script lines")
+
+
+@render_group.command("color-management")
+@click.option("--view-transform", default="Filmic", help="OCIO view transform name")
+@click.option("--look", default="None", help="OCIO look name")
+@handle_error
+def render_color_management(view_transform, look):
+    """Configure scene color management (view transform + look)."""
+    sess = get_session()
+    sess.snapshot("Set color management")
+    lines = render_mod.set_color_management(sess, view_transform=view_transform, look=look)
+    output({"view_transform": view_transform, "look": look, "script_lines": len(lines)},
+           f"Color management: {len(lines)} script lines")
+
+
+@render_group.command("denoising")
+@click.option("--enable/--disable", default=True, help="Enable/disable denoising")
+@handle_error
+def render_denoising(enable):
+    """Enable/disable the Cycles denoiser."""
+    sess = get_session()
+    sess.snapshot("Set denoising")
+    lines = render_mod.set_denoising(sess, enable=enable)
+    output({"enable": enable, "script_lines": len(lines)},
+           f"Denoising: {len(lines)} script lines")
+
+
 # ── Session Commands ────────────────────────────────────────────
 @cli.group()
 def session():
@@ -1494,9 +1829,11 @@ def repl(project_path):
         "shape":       "rectangle|ellipse|polygon|star|morph|trim-path|offset-path|repeater",
         "particles":   "emit-object|emit-point|emit-text|force-field|preset-confetti|preset-sparks|preset-disintegrate|preset-data-stream",
         "compositor":  "glow|color-grade|chromatic-aberration|lens-distortion|vignette|film-grain|motion-blur|depth-of-field|bloom|sharpen|apply-chain",
+        "text3d":      "explode|typewriter|wave|cascade|bounce|scale-pop|spiral-in|extrude-in|rotate-3d",
+        "expression":  "apply|wiggle|procedural",
         "light":       "add|set|list",
         "animation":   "keyframe|remove-keyframe|frame-range|fps|list-keyframes",
-        "render":      "settings|info|presets|execute|script",
+        "render":      "settings|info|presets|execute|script|motion-blur|ambient-occlusion|hdri|transparent-background|film-exposure|color-management|denoising",
         "session":     "status|undo|redo|history",
         "help":        "show this help",
         "quit":        "exit REPL",
