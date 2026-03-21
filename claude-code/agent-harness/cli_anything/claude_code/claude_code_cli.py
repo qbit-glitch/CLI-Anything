@@ -226,27 +226,39 @@ def prompt_cmd(text, model, system, continue_session, permission_mode, stream):
     sess = get_session()
     proj = sess.get_project()
 
-    session_id = proj.get("session_id") if continue_session else None
+    # Use the backend session ID (set from a prior successful call), not the local UUID
+    backend_session_id = proj.get("backend_session_id") if continue_session else None
     effective_model = model or proj.get("model", "claude-sonnet-4-6")
     effective_system = system or proj.get("system_prompt")
 
     sess.snapshot("before prompt")
-    conv_mod.append_message(proj, "user", text)
 
     result = run_prompt(
         prompt=text,
         model=effective_model,
         system_prompt=effective_system,
-        session_id=session_id if continue_session else None,
+        session_id=backend_session_id,
         permission_mode=permission_mode,
     )
+
+    if result.get("error"):
+        # Backend failed — revert the snapshot, do not pollute history
+        sess.undo()
+        output(result)
+        return
+
+    # Only record history after a successful backend response
+    conv_mod.append_message(proj, "user", text)
+
+    # Persist backend session ID for future --continue calls
+    if result.get("session_id"):
+        proj["backend_session_id"] = result["session_id"]
 
     # Capture assistant response from result
     response_text = (
         result.get("result")
         or result.get("content")
         or result.get("response")
-        or result.get("error")
         or ""
     )
     if response_text:
@@ -397,7 +409,45 @@ def config_group():
     pass
 
 
-_CONFIG_STORE: dict = {}
+_CONFIG_PATH = os.path.expanduser("~/.claude/cli_anything_config.json")
+
+
+def _load_config(path: str = _CONFIG_PATH) -> dict:
+    """Load config from disk; return empty dict if missing or invalid."""
+    import json as _json
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = _json.load(f)
+        return data if isinstance(data, dict) else {}
+    except (FileNotFoundError, ValueError, OSError):
+        return {}
+
+
+def _save_config(data: dict, path: str = _CONFIG_PATH) -> None:
+    """Atomically write config to disk using fcntl.flock when available."""
+    import json as _json
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    try:
+        f = open(path, "r+", encoding="utf-8")
+    except FileNotFoundError:
+        f = open(path, "w", encoding="utf-8")
+    with f:
+        _locked = False
+        try:
+            import fcntl
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            _locked = True
+        except (ImportError, OSError):
+            pass
+        try:
+            f.seek(0)
+            f.truncate()
+            _json.dump(data, f, indent=2)
+            f.flush()
+        finally:
+            if _locked:
+                import fcntl as _fcntl
+                _fcntl.flock(f.fileno(), _fcntl.LOCK_UN)
 
 
 @config_group.command("get")
@@ -405,7 +455,8 @@ _CONFIG_STORE: dict = {}
 @handle_error
 def config_get(key):
     """Get a config value."""
-    value = _CONFIG_STORE.get(key)
+    store = _load_config()
+    value = store.get(key)
     if value is None:
         output({"key": key, "value": None, "note": "Not set"})
     else:
@@ -418,7 +469,9 @@ def config_get(key):
 @handle_error
 def config_set(key, value):
     """Set a config value."""
-    _CONFIG_STORE[key] = value
+    store = _load_config()
+    store[key] = value
+    _save_config(store)
     output({"key": key, "value": value}, f"Set {key}={value}")
 
 
@@ -426,7 +479,8 @@ def config_set(key, value):
 @handle_error
 def config_list():
     """List all config values."""
-    output(_CONFIG_STORE, f"{len(_CONFIG_STORE)} config value(s)")
+    store = _load_config()
+    output(store, f"{len(store)} config value(s)")
 
 
 # ── Undo / Redo ──────────────────────────────────────────────

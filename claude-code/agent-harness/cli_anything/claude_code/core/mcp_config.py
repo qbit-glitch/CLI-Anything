@@ -6,7 +6,6 @@ fcntl.flock for atomic read-modify-write operations.
 
 import json
 import os
-import fcntl
 from pathlib import Path
 from typing import Optional
 
@@ -33,6 +32,7 @@ def _atomic_write_settings(settings_path: Path, data: dict) -> None:
     with f:
         _locked = False
         try:
+            import fcntl
             fcntl.flock(f.fileno(), fcntl.LOCK_EX)
             _locked = True
         except (ImportError, OSError):
@@ -44,7 +44,11 @@ def _atomic_write_settings(settings_path: Path, data: dict) -> None:
             f.flush()
         finally:
             if _locked:
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                try:
+                    import fcntl
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                except (ImportError, OSError):
+                    pass
 
 
 def list_mcp_servers(settings_path: Optional[str] = None) -> list:

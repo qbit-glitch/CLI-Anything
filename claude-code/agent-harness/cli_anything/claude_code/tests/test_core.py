@@ -11,6 +11,23 @@ import os
 from pathlib import Path
 
 
+# ── TestCli ──────────────────────────────────────────────
+
+class TestCli:
+
+    def test_cli_help(self):
+        """CLI --help should exit 0 and list all command groups."""
+        from click.testing import CliRunner
+        from cli_anything.claude_code.claude_code_cli import cli
+        runner = CliRunner()
+        result = runner.invoke(cli, ["--help"])
+        assert result.exit_code == 0
+        assert "session" in result.output
+        assert "prompt" in result.output
+        assert "mcp" in result.output
+        assert "agent" in result.output
+
+
 # ── TestConversation ──────────────────────────────────────────────
 
 class TestConversation:

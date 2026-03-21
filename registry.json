@@ -2777,6 +2777,98 @@
           "description": "Delete all recordings for a meeting."
         }
       ]
+    },
+    {
+      "name": "claude-code",
+      "display_name": "Claude Code",
+      "version": "1.0.0",
+      "description": "Programmatic control of Claude Code AI sessions via CLI",
+      "requires": "claude (install from https://claude.ai/code)",
+      "homepage": "https://claude.ai/code",
+      "install_cmd": "pip install git+https://github.com/HKUDS/CLI-Anything.git#subdirectory=claude-code/agent-harness",
+      "entry_point": "cli-anything-claude-code",
+      "skill_md": "claude-code/agent-harness/cli_anything/claude_code/skills/SKILL.md",
+      "category": "ai",
+      "contributor": "CLI-Anything-Team",
+      "contributor_url": "https://github.com/HKUDS/CLI-Anything",
+      "mcp_tool_prefix": "claude-code",
+      "commands": [
+        {
+          "name": "session_new",
+          "group": "session",
+          "description": "Create new conversation session."
+        },
+        {
+          "name": "session_list",
+          "group": "session",
+          "description": "List all sessions (backend + local)."
+        },
+        {
+          "name": "session_resume",
+          "group": "session",
+          "description": "Resume a session by ID."
+        },
+        {
+          "name": "session_info",
+          "group": "session",
+          "description": "Show session info."
+        },
+        {
+          "name": "session_delete",
+          "group": "session",
+          "description": "Delete a session (resets local state if it matches)."
+        },
+        {
+          "name": "tool_list",
+          "group": "tool",
+          "description": "List available tools."
+        },
+        {
+          "name": "tool_call",
+          "group": "tool",
+          "description": "Call a tool by name with JSON args."
+        },
+        {
+          "name": "agent_list",
+          "group": "agent",
+          "description": "List configured agents."
+        },
+        {
+          "name": "agent_delete",
+          "group": "agent",
+          "description": "Delete agent config."
+        },
+        {
+          "name": "mcp_list",
+          "group": "mcp",
+          "description": "List MCP servers."
+        },
+        {
+          "name": "mcp_add",
+          "group": "mcp",
+          "description": "Add MCP server. Usage: mcp add NAME COMMAND [ARGS...]"
+        },
+        {
+          "name": "mcp_remove",
+          "group": "mcp",
+          "description": "Remove MCP server."
+        },
+        {
+          "name": "config_get",
+          "group": "config",
+          "description": "Get a config value."
+        },
+        {
+          "name": "config_set",
+          "group": "config",
+          "description": "Set a config value."
+        },
+        {
+          "name": "config_list",
+          "group": "config",
+          "description": "List all config values."
+        }
+      ]
     }
   ]
 }

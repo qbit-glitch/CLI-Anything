@@ -24,12 +24,15 @@ def find_claude() -> str:
 def get_version() -> dict:
     """Get claude version string."""
     claude = find_claude()
-    result = subprocess.run(
-        [claude, "--version"],
-        capture_output=True,
-        text=True,
-        timeout=10,
-    )
+    try:
+        result = subprocess.run(
+            [claude, "--version"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except subprocess.TimeoutExpired:
+        return {"error": "claude timed out after 10s", "returncode": -1}
     return {
         "command": f"{claude} --version",
         "returncode": result.returncode,
@@ -92,12 +95,15 @@ def run_prompt(
     if permission_mode:
         argv += ["--permission-mode", permission_mode]
 
-    result = subprocess.run(
-        argv,
-        capture_output=True,
-        text=True,
-        timeout=timeout,
-    )
+    try:
+        result = subprocess.run(
+            argv,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired:
+        return {"error": f"claude timed out after {timeout}s", "returncode": -1}
 
     if result.returncode != 0:
         return {
@@ -127,12 +133,15 @@ def list_sessions() -> list:
     except RuntimeError:
         return []
 
-    result = subprocess.run(
-        [claude, "session", "list", "--output-format", "json"],
-        capture_output=True,
-        text=True,
-        timeout=15,
-    )
+    try:
+        result = subprocess.run(
+            [claude, "session", "list", "--output-format", "json"],
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+    except subprocess.TimeoutExpired:
+        return []
 
     if result.returncode != 0:
         return []
