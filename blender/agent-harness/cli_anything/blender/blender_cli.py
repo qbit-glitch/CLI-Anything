@@ -31,6 +31,7 @@ from cli_anything.blender.core import modifiers as mod_mod
 from cli_anything.blender.core import lighting as light_mod
 from cli_anything.blender.core import animation as anim_mod
 from cli_anything.blender.core import render as render_mod
+from cli_anything.blender.core import camera as camera_mod
 
 # Global session state
 _session: Optional[Session] = None
@@ -257,6 +258,29 @@ def object_add(mesh_type, name, location, rotation, scale, param, collection):
         collection=collection,
     )
     output(obj, f"Added {mesh_type}: {obj['name']}")
+
+
+@object_group.command("add-text")
+@click.argument("body")
+@click.option("--name", "-n", default=None, help="Object name")
+@click.option("--location", "-l", default=None, help="Location x,y,z")
+@click.option("--size", type=float, default=1.0, help="Font size")
+@click.option("--extrude", type=float, default=0.0, help="Extrusion depth")
+@click.option("--align", type=click.Choice(["LEFT", "CENTER", "RIGHT"]), default="CENTER",
+              help="Horizontal alignment")
+@handle_error
+def object_add_text(body, name, location, size, extrude, align):
+    """Add a text object to the scene."""
+    loc = [float(x) for x in location.split(",")] if location else None
+
+    sess = get_session()
+    sess.snapshot(f"Add text object: {body}")
+    proj = sess.get_project()
+    obj = obj_mod.add_text_object(
+        proj, body=body, name=name, location=loc,
+        font_size=size, extrude=extrude, align_x=align,
+    )
+    output(obj, f"Added text: {obj['name']}")
 
 
 @object_group.command("remove")
@@ -578,6 +602,178 @@ def camera_list():
     output(cameras, "Cameras:")
 
 
+@camera.command("create")
+@click.option("--name", "-n", default="Camera", help="Camera name")
+@click.option("--type", "cam_type",
+              type=click.Choice(["perspective", "orthographic", "panoramic"]),
+              default="perspective", help="Camera type")
+@click.option("--fov", type=float, default=50.0, help="Vertical FOV in degrees")
+@click.option("--location", "-l", default=None, help="Location x,y,z")
+@click.option("--rotation", "-r", default=None, help="Rotation x,y,z (degrees)")
+@handle_error
+def camera_create(name, cam_type, fov, location, rotation):
+    """Create a 3D camera with animated-move support."""
+    loc = [float(x) for x in location.split(",")] if location else None
+    rot = [float(x) for x in rotation.split(",")] if rotation else None
+    sess = get_session()
+    sess.snapshot(f"Create camera: {name}")
+    result = camera_mod.create_camera(
+        sess, cam_type=cam_type, fov=fov, name=name,
+        location=loc, rotation=rot,
+    )
+    output(result["camera"], f"Created camera: {result['camera']['name']}")
+
+
+@camera.command("dolly")
+@click.argument("camera_name")
+@click.option("--start", "-s", required=True, help="Start position x,y,z")
+@click.option("--end", "-e", required=True, help="End position x,y,z")
+@click.option("--duration", "-d", type=float, required=True, help="Duration in seconds")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--easing", default="ease_in_out_cubic", help="Easing function name")
+@handle_error
+def camera_dolly(camera_name, start, end, duration, fps, easing):
+    """Animate camera position (dolly move)."""
+    start_v = [float(x) for x in start.split(",")]
+    end_v = [float(x) for x in end.split(",")]
+    sess = get_session()
+    sess.snapshot(f"Camera dolly: {camera_name}")
+    lines = camera_mod.dolly(sess, camera_name, start_v, end_v, duration, fps, easing)
+    output({"camera": camera_name, "keyframes": len([l for l in lines if "keyframe_insert" in l])},
+           f"Dolly: {len(lines)} script lines generated")
+
+
+@camera.command("orbit")
+@click.argument("camera_name")
+@click.option("--center", "-c", required=True, help="Orbit center x,y,z")
+@click.option("--radius", "-r", type=float, required=True, help="Orbit radius")
+@click.option("--start-angle", type=float, default=0.0, help="Start angle (degrees)")
+@click.option("--end-angle", type=float, default=360.0, help="End angle (degrees)")
+@click.option("--duration", "-d", type=float, required=True, help="Duration in seconds")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--easing", default="ease_in_out_sine", help="Easing function name")
+@handle_error
+def camera_orbit(camera_name, center, radius, start_angle, end_angle, duration, fps, easing):
+    """Orbit camera around a center point."""
+    center_v = [float(x) for x in center.split(",")]
+    sess = get_session()
+    sess.snapshot(f"Camera orbit: {camera_name}")
+    lines = camera_mod.orbit(
+        sess, camera_name, center_v, radius, start_angle, end_angle, duration, fps, easing,
+    )
+    output({"camera": camera_name, "keyframes": len([l for l in lines if "keyframe_insert" in l])},
+           f"Orbit: {len(lines)} script lines generated")
+
+
+@camera.command("pan")
+@click.argument("camera_name")
+@click.option("--start-target", required=True, help="Start look-at point x,y,z")
+@click.option("--end-target", required=True, help="End look-at point x,y,z")
+@click.option("--duration", "-d", type=float, required=True, help="Duration in seconds")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--easing", default="linear", help="Easing function name")
+@handle_error
+def camera_pan(camera_name, start_target, end_target, duration, fps, easing):
+    """Pan camera from one look-at target to another."""
+    start_v = [float(x) for x in start_target.split(",")]
+    end_v = [float(x) for x in end_target.split(",")]
+    sess = get_session()
+    sess.snapshot(f"Camera pan: {camera_name}")
+    lines = camera_mod.pan(sess, camera_name, start_v, end_v, duration, fps, easing)
+    output({"camera": camera_name, "keyframes": len([l for l in lines if "keyframe_insert" in l])},
+           f"Pan: {len(lines)} script lines generated")
+
+
+@camera.command("zoom")
+@click.argument("camera_name")
+@click.option("--start-fov", type=float, required=True, help="Start FOV in degrees")
+@click.option("--end-fov", type=float, required=True, help="End FOV in degrees")
+@click.option("--duration", "-d", type=float, required=True, help="Duration in seconds")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--easing", default="ease_out_quad", help="Easing function name")
+@handle_error
+def camera_zoom(camera_name, start_fov, end_fov, duration, fps, easing):
+    """Animate camera field-of-view (zoom)."""
+    sess = get_session()
+    sess.snapshot(f"Camera zoom: {camera_name}")
+    lines = camera_mod.zoom(sess, camera_name, start_fov, end_fov, duration, fps, easing)
+    output({"camera": camera_name, "keyframes": len([l for l in lines if "keyframe_insert" in l])},
+           f"Zoom: {len(lines)} script lines generated")
+
+
+@camera.command("rack-focus")
+@click.argument("camera_name")
+@click.option("--start-distance", type=float, required=True, help="Start focus distance")
+@click.option("--end-distance", type=float, required=True, help="End focus distance")
+@click.option("--duration", "-d", type=float, required=True, help="Duration in seconds")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--easing", default="ease_in_out_sine", help="Easing function name")
+@handle_error
+def camera_rack_focus(camera_name, start_distance, end_distance, duration, fps, easing):
+    """Animate depth-of-field focus distance (rack focus)."""
+    sess = get_session()
+    sess.snapshot(f"Camera rack focus: {camera_name}")
+    lines = camera_mod.rack_focus(
+        sess, camera_name, start_distance, end_distance, duration, fps, easing,
+    )
+    output({"camera": camera_name, "keyframes": len([l for l in lines if "keyframe_insert" in l])},
+           f"Rack focus: {len(lines)} script lines generated")
+
+
+@camera.command("crane")
+@click.argument("camera_name")
+@click.option("--start-height", type=float, required=True, help="Start height (Z)")
+@click.option("--end-height", type=float, required=True, help="End height (Z)")
+@click.option("--duration", "-d", type=float, required=True, help="Duration in seconds")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--easing", default="ease_out_cubic", help="Easing function name")
+@handle_error
+def camera_crane(camera_name, start_height, end_height, duration, fps, easing):
+    """Animate camera height (crane / jib move)."""
+    sess = get_session()
+    sess.snapshot(f"Camera crane: {camera_name}")
+    lines = camera_mod.crane(
+        sess, camera_name, start_height, end_height, duration, fps, easing,
+    )
+    output({"camera": camera_name, "keyframes": len([l for l in lines if "keyframe_insert" in l])},
+           f"Crane: {len(lines)} script lines generated")
+
+
+@camera.command("follow-path")
+@click.argument("camera_name")
+@click.option("--point", "-p", multiple=True, required=True,
+              help="Path point x,y,z (repeat for each point)")
+@click.option("--duration", "-d", type=float, required=True, help="Duration in seconds")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@click.option("--easing", default="linear", help="Easing function name")
+@handle_error
+def camera_follow_path(camera_name, point, duration, fps, easing):
+    """Animate camera along a bezier path."""
+    points = [[float(x) for x in p.split(",")] for p in point]
+    sess = get_session()
+    sess.snapshot(f"Camera follow path: {camera_name}")
+    lines = camera_mod.follow_path(sess, camera_name, points, duration, fps, easing)
+    output({"camera": camera_name, "keyframes": len([l for l in lines if "keyframe_insert" in l])},
+           f"Follow path: {len(lines)} script lines generated")
+
+
+@camera.command("shake")
+@click.argument("camera_name")
+@click.option("--intensity", type=float, required=True, help="Peak shake amplitude")
+@click.option("--frequency", type=float, required=True, help="Shake frequency (Hz)")
+@click.option("--decay", type=float, required=True, help="Exponential decay constant")
+@click.option("--duration", "-d", type=float, required=True, help="Duration in seconds")
+@click.option("--fps", type=int, default=30, help="Frames per second")
+@handle_error
+def camera_shake(camera_name, intensity, frequency, decay, duration, fps):
+    """Add procedural camera shake with exponential decay."""
+    sess = get_session()
+    sess.snapshot(f"Camera shake: {camera_name}")
+    lines = camera_mod.shake(sess, camera_name, intensity, frequency, decay, duration, fps)
+    output({"camera": camera_name, "keyframes": len([l for l in lines if "keyframe_insert" in l])},
+           f"Shake: {len(lines)} script lines generated")
+
+
 # ── Light Commands ──────────────────────────────────────────────
 @cli.group()
 def light():
@@ -861,10 +1057,10 @@ def repl(project_path):
 
     _repl_commands = {
         "scene":     "new|open|save|info|profiles|json",
-        "object":    "add|remove|duplicate|transform|set|list|get",
+        "object":    "add|add-text|remove|duplicate|transform|set|list|get",
         "material":  "create|assign|set|list|get",
         "modifier":  "list-available|info|add|remove|set|list",
-        "camera":    "add|set|set-active|list",
+        "camera":    "add|set|set-active|list|create|dolly|orbit|pan|zoom|rack-focus|crane|follow-path|shake",
         "light":     "add|set|list",
         "animation": "keyframe|remove-keyframe|frame-range|fps|list-keyframes",
         "render":    "settings|info|presets|execute|script",
