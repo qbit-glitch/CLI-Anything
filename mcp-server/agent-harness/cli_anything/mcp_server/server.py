@@ -70,10 +70,8 @@ def main() -> None:
     for h in harnesses:
         try:
             group = find_cli_group(h)
-            specs = introspect_group(group, h.name, [])
+            specs = introspect_group(group, h.name, [], entry_point=h.entry_point)
             for spec in specs:
-                # Patch in the entry point (introspect_group doesn't know it)
-                spec.entry_point = h.entry_point
                 handler = make_tool_handler(spec, _bridge, subprocess_runner)
                 mcp.add_tool(
                     handler,

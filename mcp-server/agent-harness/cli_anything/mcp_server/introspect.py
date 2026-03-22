@@ -19,32 +19,46 @@ class ToolSpec:
     required: list[str]     # required parameter names
     cli_argv_prefix: list[str]  # e.g. ["scene", "new"]
     entry_point: str        # e.g. "cli-anything-blender"
+    positional_params: list[str] = field(default_factory=list)  # click.Argument names
 
     def build_argv(self, kwargs: dict) -> list[str]:
-        """Convert kwargs dict to CLI argv tokens."""
+        """Convert kwargs dict to CLI argv tokens.
+
+        Parameters listed in ``positional_params`` are emitted as bare values
+        (no ``--`` prefix) because they correspond to Click ``Argument``
+        objects which are positional, not options.  All other parameters are
+        emitted as ``--{name} {value}`` option pairs.
+        """
         argv = list(self.cli_argv_prefix)
         for key, value in kwargs.items():
             if value is None:
                 continue
-            param_name = key.replace("_", "-")
-            if isinstance(value, bool):
-                if value:
-                    argv.append(f"--{param_name}")
-            elif isinstance(value, list):
-                for v in value:
-                    argv.extend([f"--{param_name}", str(v)])
+            if key in self.positional_params:
+                # Positional argument — bare value, no --prefix
+                argv.append(str(value))
             else:
-                argv.extend([f"--{param_name}", str(value)])
+                param_name = key.replace("_", "-")
+                if isinstance(value, bool):
+                    if value:
+                        argv.append(f"--{param_name}")
+                elif isinstance(value, list):
+                    for v in value:
+                        argv.extend([f"--{param_name}", str(v)])
+                else:
+                    argv.extend([f"--{param_name}", str(value)])
         return argv
 
 
-def introspect_group(group, harness: str, prefix: list[str]) -> list[ToolSpec]:
+def introspect_group(group, harness: str, prefix: list[str], entry_point: str = "") -> list[ToolSpec]:
     """Recursively walk a Click Group tree, emitting a ToolSpec for each leaf command.
 
     Args:
-        group:   A click.Group (or click.MultiCommand) instance.
-        harness: Short harness name, e.g. "blender".
-        prefix:  Accumulated subcommand path, e.g. ["scene"].
+        group:        A click.Group (or click.MultiCommand) instance.
+        harness:      Short harness name, e.g. "blender".
+        prefix:       Accumulated subcommand path, e.g. ["scene"].
+        entry_point:  Binary entry-point name, e.g. "cli-anything-blender".
+                      Passed through to every ToolSpec so callers do not need
+                      to patch it afterwards.
 
     Returns:
         Flat list of ToolSpec objects for all leaf commands found.
@@ -58,10 +72,10 @@ def introspect_group(group, harness: str, prefix: list[str]) -> list[ToolSpec]:
 
     for cmd_name, cmd_obj in group.commands.items():
         if isinstance(cmd_obj, click.Group):
-            # Recurse into sub-group
-            specs.extend(introspect_group(cmd_obj, harness, prefix + [cmd_name]))
+            # Recurse into sub-group, forwarding entry_point
+            specs.extend(introspect_group(cmd_obj, harness, prefix + [cmd_name], entry_point=entry_point))
         elif isinstance(cmd_obj, click.Command):
-            spec = _build_tool_spec(cmd_obj, cmd_name, harness, prefix)
+            spec = _build_tool_spec(cmd_obj, cmd_name, harness, prefix, entry_point=entry_point)
             specs.append(spec)
 
     return specs
@@ -72,8 +86,11 @@ def _build_tool_spec(
     cmd_name: str,
     harness: str,
     prefix: list[str],
+    entry_point: str = "",
 ) -> ToolSpec:
     """Build a ToolSpec for a single leaf Click command."""
+    import click
+
     # tool_name: harness + "_" + full path joined with "_", dashes → underscores
     path_parts = prefix + [cmd_name]
     tool_name = harness + "_" + "_".join(p.replace("-", "_") for p in path_parts)
@@ -82,6 +99,7 @@ def _build_tool_spec(
 
     properties: dict[str, dict] = {}
     required_params: list[str] = []
+    positional_params: list[str] = []
 
     for param in cmd.params:
         name = param.name or ""
@@ -90,10 +108,11 @@ def _build_tool_spec(
         param_name, schema = click_param_to_schema(param)
         properties[param_name] = schema
 
-        # click.Argument objects are always required (unless they have a default)
-        import click
-        if isinstance(param, click.Argument) and param.required:
-            required_params.append(param_name)
+        if isinstance(param, click.Argument):
+            # Positional arguments: required when they have no default
+            positional_params.append(param_name)
+            if param.required:
+                required_params.append(param_name)
 
     parameters = {
         "type": "object",
@@ -106,7 +125,8 @@ def _build_tool_spec(
         parameters=parameters,
         required=required_params,
         cli_argv_prefix=path_parts,
-        entry_point="",  # filled in by server.py / introspect_group caller
+        entry_point=entry_point,
+        positional_params=positional_params,
     )
 
 

@@ -299,3 +299,76 @@ class TestBuildArgv:
         spec = self._make_spec(["text3d", "create"])
         argv = spec.build_argv({"output_path": "/tmp/out"})
         assert "--output-path" in argv
+
+    def test_positional_argument_bare_value(self):
+        """click.Argument params must be emitted as bare values, not --flags."""
+        spec = ToolSpec(
+            tool_name="test_scene_delete",
+            description="",
+            parameters={"type": "object", "properties": {}},
+            required=["name"],
+            cli_argv_prefix=["scene", "delete"],
+            entry_point="cli-anything-test",
+            positional_params=["name"],
+        )
+        argv = spec.build_argv({"name": "Foo"})
+        assert argv == ["scene", "delete", "Foo"]
+        assert "--name" not in argv
+
+    def test_positional_and_option_mixed(self):
+        """Positional args are bare; options still get --flags."""
+        spec = ToolSpec(
+            tool_name="test_render",
+            description="",
+            parameters={"type": "object", "properties": {}},
+            required=["output"],
+            cli_argv_prefix=["render"],
+            entry_point="cli-anything-test",
+            positional_params=["output"],
+        )
+        argv = spec.build_argv({"output": "/tmp/out.png", "quality": 0.8})
+        assert argv[0] == "render"
+        assert "/tmp/out.png" in argv
+        assert "--output" not in argv
+        assert "--quality" in argv
+        assert "0.8" in argv
+
+    def test_introspect_populates_positional_params(self):
+        """introspect_group must set positional_params for click.Argument params."""
+        cli = make_test_cli()
+        specs = introspect_group(cli, "test", [])
+        by_name = {s.tool_name: s for s in specs}
+
+        delete_spec = by_name["test_scene_delete"]
+        assert "scene_name" in delete_spec.positional_params
+
+        render_spec = by_name["test_render"]
+        assert "output" in render_spec.positional_params
+
+        # Options must NOT be in positional_params
+        new_spec = by_name["test_scene_new"]
+        assert "name" not in new_spec.positional_params
+        assert "fps" not in new_spec.positional_params
+
+    def test_introspect_delete_argv_is_bare(self):
+        """End-to-end: introspected delete spec builds bare-value argv."""
+        cli = make_test_cli()
+        specs = introspect_group(cli, "test", [])
+        by_name = {s.tool_name: s for s in specs}
+        argv = by_name["test_scene_delete"].build_argv({"scene_name": "Hero"})
+        assert argv == ["scene", "delete", "Hero"]
+        assert "--scene-name" not in argv
+
+    def test_introspect_entry_point_propagated(self):
+        """entry_point passed to introspect_group must appear on every ToolSpec."""
+        cli = make_test_cli()
+        specs = introspect_group(cli, "test", [], entry_point="cli-anything-test")
+        for spec in specs:
+            assert spec.entry_point == "cli-anything-test"
+
+    def test_introspect_entry_point_default_empty(self):
+        """When entry_point is omitted it defaults to empty string (backward compat)."""
+        cli = make_test_cli()
+        specs = introspect_group(cli, "test", [])
+        for spec in specs:
+            assert spec.entry_point == ""

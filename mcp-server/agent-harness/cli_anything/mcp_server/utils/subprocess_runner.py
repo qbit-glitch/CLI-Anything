@@ -34,9 +34,10 @@ def run_cli_tool(
             "returncode": -1,
         }
 
-    full_argv = [binary] + list(argv) + ["--json"]
+    global_opts = ["--json"]
     if project_path:
-        full_argv += ["--project", project_path]
+        global_opts += ["--project", project_path]
+    full_argv = [binary] + global_opts + list(argv)
 
     try:
         result = subprocess.run(
