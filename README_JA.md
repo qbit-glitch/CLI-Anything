@@ -5,6 +5,8 @@
 CLI-Anything: AIエージェントと世界のソフトウェアの架け橋</strong><br>
 </p>
 
+**🌐 [CLI-Hub](https://hkuds.github.io/CLI-Anything/)**: すべてのコミュニティCLIを一か所で閲覧・インストール。新しいソフトウェアのCLIがありますか？[PRを送信](https://github.com/HKUDS/CLI-Anything/blob/main/CONTRIBUTING.md) — Hubは即座に更新されます。
+
 <p align="center">
   <a href="#-クイックスタート"><img src="https://img.shields.io/badge/Quick_Start-5_min-blue?style=for-the-badge" alt="クイックスタート"></a>
   <a href="#-デモンストレーション"><img src="https://img.shields.io/badge/Demos-11_Apps-green?style=for-the-badge" alt="デモ"></a>
