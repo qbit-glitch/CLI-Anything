@@ -27,6 +27,7 @@
 # Step 4: Allow each software dir (top level only)
 !/shared/
 !/gimp/
+!/image3d/
 !/blender/
 !/inkscape/
 !/audacity/
@@ -45,6 +46,8 @@
 # Step 5: Inside each software dir, ignore everything (including dotfiles)
 /gimp/*
 /gimp/.*
+/image3d/*
+/image3d/.*
 /blender/*
 /blender/.*
 /inkscape/*
@@ -76,6 +79,7 @@
 
 # Step 6: ...except agent-harness/
 !/gimp/agent-harness/
+!/image3d/agent-harness/
 !/blender/agent-harness/
 !/inkscape/agent-harness/
 !/audacity/agent-harness/

@@ -104,6 +104,20 @@
       "contributor_url": "https://github.com/HKUDS/CLI-Anything"
     },
     {
+      "name": "image3d",
+      "display_name": "Image to 3D",
+      "version": "1.0.0",
+      "description": "Convert 2D images to 3D meshes via Trellis, InstantMesh, and Unique3D with smart auto-routing",
+      "requires": "gradio-client (pip install gradio-client)",
+      "homepage": null,
+      "install_cmd": "pip install git+https://github.com/HKUDS/CLI-Anything.git#subdirectory=image3d/agent-harness",
+      "entry_point": "cli-anything-image3d",
+      "skill_md": "image3d/agent-harness/cli_anything/image3d/skills/SKILL.md",
+      "category": "3d",
+      "contributor": "CLI-Anything-Team",
+      "contributor_url": "https://github.com/HKUDS/CLI-Anything"
+    },
+    {
       "name": "inkscape",
       "display_name": "Inkscape",
       "version": "1.0.0",
