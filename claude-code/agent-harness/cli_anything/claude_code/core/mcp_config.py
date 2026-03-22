@@ -23,32 +23,23 @@ def _load_settings(settings_path: Path) -> dict:
 
 
 def _atomic_write_settings(settings_path: Path, data: dict) -> None:
-    """Atomically write settings.json with exclusive file locking."""
+    """Write settings.json crash-safely via tmp file + atomic replace.
+
+    Replaces the previous in-place truncate approach which could corrupt
+    settings.json on SIGKILL between truncate() and flush().
+    """
     settings_path.parent.mkdir(parents=True, exist_ok=True)
+    content = json.dumps(data, indent=2)
+    tmp = settings_path.with_suffix(".tmp")
     try:
-        f = open(settings_path, "r+")
-    except FileNotFoundError:
-        f = open(settings_path, "w")
-    with f:
-        _locked = False
+        tmp.write_text(content, encoding="utf-8")
+        tmp.replace(settings_path)
+    finally:
+        # Clean up tmp file if replace failed (e.g. permission error)
         try:
-            import fcntl
-            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-            _locked = True
-        except (ImportError, OSError):
+            tmp.unlink(missing_ok=True)
+        except OSError:
             pass
-        try:
-            f.seek(0)
-            f.truncate()
-            json.dump(data, f, indent=2)
-            f.flush()
-        finally:
-            if _locked:
-                try:
-                    import fcntl
-                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-                except (ImportError, OSError):
-                    pass
 
 
 def list_mcp_servers(settings_path: Optional[str] = None) -> list:

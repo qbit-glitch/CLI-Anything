@@ -11,6 +11,25 @@ import json
 from typing import Optional
 
 
+def _safe_command_str(argv: list) -> str:
+    """Return argv as a display string with the -p prompt value redacted.
+
+    Prevents sensitive prompt content (e.g. API keys, passwords) from being
+    stored verbatim in response dicts, logs, or session history.
+    """
+    result = []
+    i = 0
+    while i < len(argv):
+        if argv[i] == "-p" and i + 1 < len(argv):
+            result.append("-p")
+            result.append("<prompt>")
+            i += 2
+        else:
+            result.append(argv[i])
+            i += 1
+    return " ".join(result)
+
+
 def find_claude() -> str:
     """Find claude binary. Raises RuntimeError if not found."""
     path = shutil.which("claude")
@@ -109,20 +128,20 @@ def run_prompt(
         return {
             "error": result.stderr.strip() or result.stdout.strip(),
             "returncode": result.returncode,
-            "command": " ".join(argv),
+            "command": _safe_command_str(argv),
         }
 
     stdout = result.stdout.strip()
     try:
         parsed = json.loads(stdout)
         parsed["returncode"] = result.returncode
-        parsed["command"] = " ".join(argv)
+        parsed["command"] = _safe_command_str(argv)
         return parsed
     except (json.JSONDecodeError, ValueError):
         return {
             "result": stdout,
             "returncode": result.returncode,
-            "command": " ".join(argv),
+            "command": _safe_command_str(argv),
         }
 
 

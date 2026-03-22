@@ -97,8 +97,17 @@ class SessionBridge:
             return
         try:
             raw = json.loads(self._index_file.read_text(encoding="utf-8"))
+            session_dir_resolved = self._session_dir.resolve()
             for item in raw:
                 entry = SessionEntry(**item)
+                # Guard against tampered index redirecting project writes to
+                # arbitrary paths (e.g., ~/.ssh/authorized_keys).
+                try:
+                    p = Path(entry.project_path).resolve()
+                    if not p.is_relative_to(session_dir_resolved):
+                        continue
+                except Exception:
+                    continue
                 self._sessions[entry.session_id] = entry
         except Exception:
             # Corrupted index — start fresh

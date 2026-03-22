@@ -22,48 +22,58 @@ def register_pipelines(mcp, bridge: "SessionBridge", runner) -> None:
         """Full pipeline: image3d generate → blender import-mesh → basic animation setup."""
         results: dict = {}
 
-        # Step 1: Create image3d session and generate mesh
+        # Step 1: Generate mesh.  img_session is ephemeral (mesh gen only) —
+        # always deleted before returning regardless of outcome.
         img_session = bridge.new_session("image3d")
         img_project = bridge.get_project_path(img_session)
-        img_result = runner.run_cli_tool(
-            "cli-anything-image3d",
-            ["generate", image_path, "--output-dir", output_dir],
-            img_project,
-        )
+        try:
+            img_result = runner.run_cli_tool(
+                "cli-anything-image3d",
+                ["generate", image_path, "--output-dir", output_dir],
+                img_project,
+            )
+        finally:
+            bridge.delete_session(img_session)
+
         results["image3d"] = img_result
         if not img_result["success"]:
             return {"success": False, "step": "image3d", "results": results}
 
-        # Step 2: Import mesh into Blender
+        # Step 2: Import mesh into Blender.
         mesh_path = img_result["data"].get("output_path", "")
         blend_session = bridge.new_session("blender")
         blend_project = bridge.get_project_path(blend_session)
-        blend_result = runner.run_cli_tool(
-            "cli-anything-blender",
-            ["import-mesh", mesh_path],
-            blend_project,
-        )
-        results["blender_import"] = blend_result
-
-        # Step 3: Basic rotation animation (rotate 360 over duration)
-        if blend_result["success"]:
-            anim_result = runner.run_cli_tool(
+        try:
+            blend_result = runner.run_cli_tool(
                 "cli-anything-blender",
-                [
-                    "animation", "keyframe",
-                    "--property", "rotation_euler[2]",
-                    "--frame", "1",
-                    "--value", "0",
-                ],
+                ["import-mesh", mesh_path],
                 blend_project,
             )
-            results["animation"] = anim_result
+            results["blender_import"] = blend_result
 
-        return {
-            "success": blend_result.get("success", False),
-            "session_id": blend_session,
-            "results": results,
-        }
+            # Step 3: Basic rotation animation (rotate 360 over duration)
+            if blend_result["success"]:
+                anim_result = runner.run_cli_tool(
+                    "cli-anything-blender",
+                    [
+                        "animation", "keyframe",
+                        "--property", "rotation_euler[2]",
+                        "--frame", "1",
+                        "--value", "0",
+                    ],
+                    blend_project,
+                )
+                results["animation"] = anim_result
+
+            return {
+                "success": blend_result.get("success", False),
+                "session_id": blend_session,
+                "results": results,
+            }
+        except Exception:
+            # Unhandled exception — clean up blend_session since we can't return it.
+            bridge.delete_session(blend_session)
+            raise
 
     @mcp.tool(description="Create 3D text and export as video via Shotcut")
     def pipeline_text_to_video(

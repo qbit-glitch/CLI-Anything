@@ -85,8 +85,8 @@ class TestDiscoverHarnesses:
         # Module doesn't exist, so skill_md_path should be None (no crash)
         assert result[0].skill_md_path is None
 
-    def test_mcp_prefix_variants_excluded(self):
-        """All cli-anything-mcp* variants should be excluded."""
+    def test_mcp_server_entry_point_excluded(self):
+        """Only the exact MCP server entry point is excluded; other mcp-* harnesses are valid."""
         eps = [
             _make_ep("cli-anything-mcp-server", "cli_anything.mcp_server.server:main"),
             _make_ep("cli-anything-mcp-proxy", "cli_anything.mcp_proxy.proxy:main"),
@@ -94,5 +94,9 @@ class TestDiscoverHarnesses:
         ]
         with patch("importlib.metadata.entry_points", return_value=eps):
             result = discover_harnesses()
-        assert len(result) == 1
-        assert result[0].name == "blender"
+        names = [h.name for h in result]
+        # mcp-server is excluded; mcp-proxy and blender are valid harnesses
+        assert "mcp-server" not in names
+        assert "mcp-proxy" in names
+        assert "blender" in names
+        assert len(result) == 2

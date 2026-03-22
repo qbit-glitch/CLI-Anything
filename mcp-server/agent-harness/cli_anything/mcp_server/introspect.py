@@ -20,6 +20,7 @@ class ToolSpec:
     cli_argv_prefix: list[str]  # e.g. ["scene", "new"]
     entry_point: str        # e.g. "cli-anything-blender"
     positional_params: list[str] = field(default_factory=list)  # click.Argument names
+    negated_flags: dict = field(default_factory=dict)  # param_name -> "--no-flag" string
 
     def build_argv(self, kwargs: dict) -> list[str]:
         """Convert kwargs dict to CLI argv tokens.
@@ -28,6 +29,11 @@ class ToolSpec:
         (no ``--`` prefix) because they correspond to Click ``Argument``
         objects which are positional, not options.  All other parameters are
         emitted as ``--{name} {value}`` option pairs.
+
+        For boolean flags:
+        - ``True``  → ``--flag``
+        - ``False`` → ``--no-flag`` if a secondary opt exists, otherwise skipped
+          (Click default handles the absent case).
         """
         argv = list(self.cli_argv_prefix)
         for key, value in kwargs.items():
@@ -41,6 +47,12 @@ class ToolSpec:
                 if isinstance(value, bool):
                     if value:
                         argv.append(f"--{param_name}")
+                    else:
+                        # Emit secondary flag (e.g. --no-overwrite) when available.
+                        neg = self.negated_flags.get(key)
+                        if neg:
+                            argv.append(neg)
+                        # else: no secondary flag — omitting it lets Click use its default
                 elif isinstance(value, list):
                     for v in value:
                         argv.extend([f"--{param_name}", str(v)])
@@ -100,6 +112,7 @@ def _build_tool_spec(
     properties: dict[str, dict] = {}
     required_params: list[str] = []
     positional_params: list[str] = []
+    negated_flags: dict[str, str] = {}
 
     for param in cmd.params:
         name = param.name or ""
@@ -113,6 +126,14 @@ def _build_tool_spec(
             positional_params.append(param_name)
             if param.required:
                 required_params.append(param_name)
+        elif isinstance(param, click.Option):
+            # Required options: mark them required in the JSON Schema too
+            if getattr(param, "required", False):
+                required_params.append(param_name)
+            # Collect secondary flag names (e.g. --no-overwrite for --overwrite/--no-overwrite)
+            secondary = getattr(param, "secondary_opts", None)
+            if secondary:
+                negated_flags[param_name] = secondary[0]
 
     parameters = {
         "type": "object",
@@ -127,6 +148,7 @@ def _build_tool_spec(
         cli_argv_prefix=path_parts,
         entry_point=entry_point,
         positional_params=positional_params,
+        negated_flags=negated_flags,
     )
 
 

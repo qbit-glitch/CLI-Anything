@@ -65,13 +65,22 @@ def make_tool_handler(spec, bridge: SessionBridge, runner):
 
 def main() -> None:
     """Discover harnesses, register tools/resources, and start the MCP server."""
-    harnesses = discover_harnesses()
+    harnesses = discover_harnesses(registry_path=REGISTRY_PATH)
 
+    registered_tool_names: set[str] = set()
     for h in harnesses:
         try:
             group = find_cli_group(h)
             specs = introspect_group(group, h.name, [], entry_point=h.entry_point)
             for spec in specs:
+                if spec.tool_name in registered_tool_names:
+                    print(
+                        f"Warning: tool name collision '{spec.tool_name}' "
+                        f"(from {h.name}), skipping duplicate",
+                        file=sys.stderr,
+                    )
+                    continue
+                registered_tool_names.add(spec.tool_name)
                 handler = make_tool_handler(spec, _bridge, subprocess_runner)
                 mcp.add_tool(
                     handler,

@@ -397,11 +397,11 @@ def generate_skill_md(metadata: SkillMetadata, template_path: Optional[str] = No
     if not template_path.exists():
         return generate_skill_md_simple(metadata)
 
-    env = Environment(loader=FileSystemLoader(template_path.parent))
+    env = Environment(loader=FileSystemLoader(template_path.parent))  # nosemgrep
     template = env.get_template(template_path.name)
 
-    # Render template
-    return template.render(
+    # Render template — generates Markdown, not HTML; XSS not applicable here
+    return template.render(  # nosemgrep
         skill_name=metadata.skill_name,
         skill_description=metadata.skill_description,
         software_name=metadata.software_name,
@@ -621,11 +621,17 @@ def update_registry_commands(harness_path: str, registry_path: str) -> None:
     entry["mcp_tool_prefix"] = entry_name
     entry["commands"] = commands
 
-    # Step 6 — write back pretty-printed
-    registry_file.write_text(
-        json.dumps(data, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
+    # Step 6 — write back pretty-printed via tmp+replace (crash-safe)
+    content = json.dumps(data, indent=2, ensure_ascii=False) + "\n"
+    tmp = registry_file.with_suffix(".tmp")
+    try:
+        tmp.write_text(content, encoding="utf-8")
+        tmp.replace(registry_file)
+    finally:
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
 
 
 def generate_skill_file(harness_path: str, output_path: Optional[str] = None,
