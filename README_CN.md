@@ -5,6 +5,8 @@
 CLI-Anything：连接 AI Agent 与全世界软件的桥梁</strong><br>
 </p>
 
+**🌐 [CLI-Hub](https://hkuds.github.io/CLI-Anything/hub/)**：一站式浏览和安装所有社区 CLI。有新软件的 CLI？[提交 PR](https://github.com/HKUDS/CLI-Anything/blob/main/CONTRIBUTING.md) — Hub 会即时更新。
+
 <p align="center">
   <a href="#-快速上手"><img src="https://img.shields.io/badge/快速上手-5_分钟-blue?style=for-the-badge" alt="Quick Start"></a>
   <a href="#-实测展示"><img src="https://img.shields.io/badge/Demo-11_款软件-green?style=for-the-badge" alt="Demos"></a>

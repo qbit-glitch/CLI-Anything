@@ -5,6 +5,8 @@
 CLI-Anything: Bridging the Gap Between AI Agents and the World's Software</strong><br>
 </p>
 
+**🌐 [CLI-Hub](https://hkuds.github.io/CLI-Anything/hub/)**: Browse & install all community CLIs in one place. Have a CLI for a new software? [Open a PR](https://github.com/HKUDS/CLI-Anything/blob/main/CONTRIBUTING.md) — the hub updates instantly.
+
 <p align="center">
   <a href="#-quick-start"><img src="https://img.shields.io/badge/Quick_Start-5_min-blue?style=for-the-badge" alt="Quick Start"></a>
   <a href="https://hkuds.github.io/CLI-Anything/hub/"><img src="https://img.shields.io/badge/CLI_Hub-Browse_%26_Install-ff69b4?style=for-the-badge" alt="CLI Hub"></a>
@@ -24,8 +26,6 @@ CLI-Anything: Bridging the Gap Between AI Agents and the World's Software</stron
 </p>
 
 **One Command Line**: Make any software agent-ready for OpenClaw, nanobot, Cursor, Claude Code, etc.&nbsp;&nbsp;[**中文文档**](README_CN.md) | [**日本語ドキュメント**](README_JA.md)
-
-**🌐 [CLI-Hub](https://hkuds.github.io/CLI-Anything/hub/)**: Browse & install all community CLIs in one place. Have a CLI for a new software? [Open a PR](https://github.com/HKUDS/CLI-Anything/blob/main/CONTRIBUTING.md) — the hub updates instantly.
 
 <p align="center">
   <img src="assets/cli-typing.gif" alt="CLI-Anything typing demo" width="800">
